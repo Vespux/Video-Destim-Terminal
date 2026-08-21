@@ -1,10 +1,12 @@
 # Video Destim Terminal
 
-**Video Destim Terminal (VDT)** is a deliberately low-stimulation, self-hosted interface for intentionally choosing videos from a small list of creators and then handing playback off to YouTube.
+**Video Destim Terminal (VDT)** is a deliberately low-stimulation, self-hosted interface for choosing videos from your own curated list of YouTube creators and then handing playback off to YouTube.
 
-The guiding idea is simple: **choose first, watch second**.
+VDT's goal is to be a tool that allows users a more intentional way of selecting videos to watch. It also has the option of self-imposed video consumption limits by implementing Watch Credits and Cooldowns, which can be configured in a variety of ways or disabled altogether. 
 
-No thumbnail wall. No endless homepage. No algorithmic discovery surface inside VDT. You choose which creators are available, VDT shows a compact text-first list of eligible recent uploads, and a confirmed request opens the normal YouTube watch URL in whatever browser/player your device uses.
+If you, too, feel it's time we ditch the endless scrolling, attention-economy based, algorithmicly fed slop and slow down a bit, VDT is probably for you. 
+
+You choose which creators are available, VDT shows a compact text-first list of eligible recent uploads, and a confirmed request opens the normal YouTube watch URL in whatever browser/player you use. (We certainly have some recommendations for this that align with the goal of VDT!)
 
 > **Initial public GitHub release: v1.30**
 >
