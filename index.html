@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050805">
+<title>Video-Destim-Terminal v1.30</title>
+<link rel="icon" href="/favicon.svg?v=1.30" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1.30">
+<link rel="manifest" href="/manifest.webmanifest?v=1.30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050805;--fg:#8cff8c;--dim:#579157;--warn:#ffe88a;--err:#ff9292;--line:#2d5e2d}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg)}
+body{font-family:"VT323","Courier New",monospace;font-size:24px;line-height:1.1;padding:20px;display:flex;justify-content:center;align-items:stretch;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.screen-frame{width:min(100%,920px);min-height:calc(100vh - 40px);min-height:calc(100dvh - 40px);margin:0 auto;padding:24px 22px 30px;border:2px solid rgba(71,255,114,.72);border-radius:20px;background:var(--bg);box-shadow:0 0 0 1px rgba(71,255,114,.06),0 0 22px rgba(71,255,114,.12),inset 0 0 20px rgba(71,255,114,.025);overflow-x:hidden}
+#app{max-width:760px;margin:0 auto}
+@media (max-width:600px){body{padding:8px;font-size:23px}.screen-frame{min-height:calc(100vh - 16px);min-height:calc(100dvh - 16px);padding:16px 12px 22px;border-radius:18px}.screen-frame .title{font-size:clamp(24px,7.2vw,29px)}}
+.title{font-size:30px;letter-spacing:.04em}.dim{color:var(--dim)}.warn{color:var(--warn)}.err{color:var(--err)}
+button{font:inherit;background:none;border:0;padding:0;color:inherit;text-align:left;border-radius:0;appearance:none;-webkit-appearance:none}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.item{display:block;width:fit-content;max-width:100%;margin:8px 0;cursor:pointer;color:var(--fg);text-decoration:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.item.disabled{color:#405840;cursor:default}
+.cfg-item{display:block;width:100%;margin:11px 0 14px;cursor:pointer;color:var(--fg);-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.cfg-item.disabled{color:#405840;cursor:default}
+.cfg-label{display:block}.cfg-value-row{display:grid;grid-template-columns:20ch auto;align-items:baseline;margin-top:3px}.cfg-dots{display:block;overflow:hidden;white-space:nowrap}.cfg-dots:after{content:"................................................"}.cfg-value{display:block;white-space:nowrap}
+.title.nav,.crumb{cursor:pointer;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}.path{color:var(--dim);margin-top:2px}.path .current{color:var(--dim)}
+.tiny{font-size:19px}.space{height:12px}
+.header-inline,.legal-inline{font-size:19px;color:var(--dim);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.doc-command{color:var(--fg);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.legal-copy{max-width:680px}.legal-copy div{margin:9px 0}
+input{width:100%;background:transparent;color:var(--fg);border:0;border-bottom:1px solid var(--line);outline:0;border-radius:0;font:inherit;padding:2px 0;-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+input[type=number]{max-width:140px}
+.command-line{display:flex;align-items:baseline;gap:.45ch;margin-top:18px;width:100%;color:var(--fg)}
+.command-prefix{flex:0 0 auto}
+.command-entry{position:relative;display:inline-block;width:12ch;max-width:55vw}
+.command-input{display:block;width:100%;max-width:100%;border:0!important;padding:0!important;background:transparent!important;color:var(--fg)!important;caret-color:var(--fg);box-shadow:none!important}
+.command-idle-cursor{display:none;position:absolute;left:0;top:0;pointer-events:none;animation:b 1s step-end infinite}
+.command-input:placeholder-shown:not(:focus)+.command-idle-cursor{display:block}
+.command-msg{min-height:1.1em;margin-top:3px}
+.stat-section{margin:18px 0 8px}
+.stat-title{color:var(--dim);margin-bottom:8px}
+.stat-row{margin:8px 0 11px}
+.stat-label{display:block}
+.stat-value-row{display:grid;grid-template-columns:20ch minmax(0,1fr);align-items:baseline;margin-top:2px}
+.stat-dots{display:block;overflow:hidden;white-space:nowrap}
+.stat-dots:after{content:"................................................"}
+.stat-value{display:block;overflow-wrap:anywhere}
+.tracking-trigger{cursor:default}
+.signal-screen{min-height:72vh;display:flex;flex-direction:column;justify-content:flex-start;padding-top:8vh}
+.signal-terminal-line{min-height:1.2em;white-space:pre-wrap}
+.signal-flight{height:2.2em;overflow:hidden;white-space:pre;font:inherit;margin:22px 0 18px}
+.signal-actions{margin-top:18px}
+.video{margin:12px 0 18px}.video-title{font-variant-emoji:text}.emoji-glyph{display:inline-block;font-variant-emoji:text;font-size:.90em;line-height:1;vertical-align:-.04em;filter:grayscale(1) sepia(1) saturate(5) hue-rotate(68deg) brightness(1.05) contrast(1.05);opacity:.88}.meta{font-size:19px;color:var(--dim);margin-top:3px}.watched{text-decoration:line-through;color:var(--dim)}.cursor:after{content:"_";animation:b 1s step-end infinite}@keyframes b{50%{opacity:0}}
+</style>
+</head>
+<body><main class="screen-frame"><div id="app"><div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30</div><hr><div>INITIALIZING...</div></div></main>
+<script>
+const KEY="videoDestimTerminalState", OLD_KEY="videoDestimTerminalLegacyV002";
+const LEGAL_ACCEPT_KEY="videoDestimTerminalLegalAccepted-2026-08";
+const PATCHED_CREDIT_CODE="credit-inject-7k4m-92qx-vt38-6nwp-r5cz-h1jf";
+const PRESERVE_CAPS=new Set("AMD API ASMR BIOS BMW CIA CLI COD CPU CRT CSS DLC DIY DNS DVD FBI FIFA FPS FTP GTA GPU GUI HDD HDMI HDR HTTPS HTTP IKEA IPS LCD LED LEGO MLB MMO MMORPG NASA NAS NBA NFL NHL NPC OLED PCI PNG POV RAM RPG ROM SDR SFTP SSH SSD UFC URL USB USSR VGA VPN VHS WAN WWE WTF XML".split(" "));
+let st=null, view=returnView(), overridePinValue=null, stateFetchedAt=Date.now(), configDraft=null, configDirty=false, reorderDraft=null, reorderDirty=false, aboutReturnView=null, readDocReturnView=null, historyReturnView=null, diagReturnView=null, flushCacheReturnView=null, creditEjectReturnView=null, legalReturnView=null, supportReturnView=null, deleteDataReturnView=null, signalReturnView=null, configLeaveTarget=null, configLeaveReturnView=null, reorderLeaveTarget=null, reorderLeaveReturnView=null, signalTapCount=0, signalTapLast=0;
+const app=document.getElementById("app");
+function copy(x){return JSON.parse(JSON.stringify(x))}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+const EMOJI_SEGMENT_RE=/\p{Extended_Pictographic}/u;
+const titleSegmenter=(typeof Intl!=="undefined"&&Intl.Segmenter)?new Intl.Segmenter(undefined,{granularity:"grapheme"}):null;
+function terminalVideoTitle(title){let text=String(title);if(!titleSegmenter)return esc(text);return Array.from(titleSegmenter.segment(text),part=>{let seg=part.segment;return EMOJI_SEGMENT_RE.test(seg)?`<span class="emoji-glyph">${esc(seg)}</span>`:esc(seg)}).join("")}
+function bind(id,fn){setTimeout(()=>{let e=document.getElementById(id);if(e)e.onclick=fn},0)}
+function shortcutFromLabel(label){let m=String(label).match(/^\[([^\]]+)\]/);if(!m)return"";let key=m[1].trim();if(/^\d+$/.test(key))return String(parseInt(key,10));return key.toLowerCase()}
+function returnView(){try{let raw=sessionStorage.getItem("videoDestimReturnView");if(!raw)return{name:"home"};sessionStorage.removeItem("videoDestimReturnView");let v=JSON.parse(raw);return v&&v.name==="videos"?v:{name:"home"}}catch(e){return{name:"home"}}}
+async function api(url,opts={}){let options={...opts,headers:{"Content-Type":"application/json",...(opts.headers||{})}};if(options.body&&typeof options.body!=="string")options.body=JSON.stringify(options.body);let r=await fetch(url,options);let data={};try{data=await r.json()}catch(e){}if(!r.ok)throw new Error(data.error||`REQUEST FAILED (${r.status})`);return data}
+async function refreshState(){let tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";st=await api(`/api/state?tz=${encodeURIComponent(tz)}`);stateFetchedAt=Date.now();return st}
+function legalAccepted(){try{return localStorage.getItem(LEGAL_ACCEPT_KEY)==="1"}catch(e){return false}}
+function openExternal(url){window.open(url,"_blank","noopener")}
+async function boot(){try{await refreshState();if(st.needsMigration){let raw=localStorage.getItem(KEY)||localStorage.getItem(OLD_KEY);if(raw){try{await api("/api/migrate",{method:"POST",body:JSON.parse(raw)})}catch(e){await api("/api/initialize",{method:"POST"})}}else await api("/api/initialize",{method:"POST"});await refreshState()}if(!legalAccepted())return legalGate();render()}catch(e){fatal(e.message)}}
+function fatal(msg){app.innerHTML=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30</div><hr><div class="err">${esc(msg)}</div><div class="tiny dim">CHECK CONTAINER STATUS / LOGS.</div>`}
+function cooldownMs(){return Math.max(0,(st?.cooldownRemainingMs||0)-(Date.now()-stateFetchedAt))}
+function head(sub=""){let tid="t"+Math.random().toString(36).slice(2);bind(tid,()=>{if(view.name==="configLeave"||view.name==="reorderLeave")return;requestNavigation({name:"home"})});let path="";if(sub){let parts=sub.split(" / ");let p=parts.map((label,i)=>{let current=i===parts.length-1,route=null;if(!current&&label==="CONFIG")route=()=>requestNavigation({name:"config"});if(!current&&label==="STATS")route=()=>requestNavigation({name:"stats",scope:view.scope||"period"});if(!current&&label==="REQUEST A WATCH")route=()=>requestNavigation({name:"creators"});if(!current&&label==="AVAILABLE CREATORS")route=()=>requestNavigation({name:"creatorCfg"});if(!current&&i>0&&parts[0]==="REQUEST A WATCH"&&view.cid&&label!=="SELECT CREATOR")route=()=>requestNavigation({name:"videos",cid:view.cid,sort:view.sort||st.settings.sort});if(route){let id="p"+Math.random().toString(36).slice(2);bind(id,route);return `<button type="button" id="${id}" class="crumb">${esc(label)}</button>`}return `<span class="current">${esc(label)}</span>`}).join(`<span> / </span>`);path=`<div class="path">${p}</div>`}let sid="s"+Math.random().toString(36).slice(2),lid="l"+Math.random().toString(36).slice(2);bind(sid,()=>openSupport());bind(lid,()=>openLegal());return `<button type="button" id="${tid}" class="title nav">VIDEO-DESTIM-TERMINAL</button><div class="dim">v1.30 · <button type="button" id="${sid}" class="header-inline">SUPPORT</button> · <button type="button" id="${lid}" class="header-inline">LEGAL</button></div>${path}<hr>`}
+function item(label,fn,disabled=false,isDefault=false){let id="i"+Math.random().toString(36).slice(2),key=shortcutFromLabel(label);setTimeout(()=>{let e=document.getElementById(id);if(e&&!disabled)e.onclick=fn},0);return `<button type="button" id="${id}" class="item${disabled?" disabled":""}"${key?` data-shortcut="${key}"`:""}${isDefault?' data-default="1"':""}>${label}</button>`}
+function docCommand(command,description,fn){let id="d"+Math.random().toString(36).slice(2);bind(id,fn);return `<div><button type="button" id="${id}" class="doc-command">${esc(command)}</button></div><div class="tiny dim">${esc(description)}</div><div class="space"></div>`}
+function cfg(num,label,value,fn,disabled=false){let id="c"+Math.random().toString(36).slice(2);setTimeout(()=>{let e=document.getElementById(id);if(e&&!disabled)e.onclick=fn},0);return `<button type="button" id="${id}" class="cfg-item${disabled?" disabled":""}" data-shortcut="${num}"><span class="cfg-label">[${num}] ${label}</span><span class="cfg-value-row"><span class="cfg-dots"></span><span class="cfg-value">${value}</span></span></button>`}
+function creatorPrefix(n,total,bracket=false){
+  let digits=Math.max(1,String(Math.max(1,total)).length);
+  let gap="&nbsp;".repeat(Math.max(1,digits-String(n).length+1));
+  return bracket?`[${n}]${gap}`:`${n}.${gap}`;
+}
+async function handleHiddenCommand(raw,msg,input){
+  if(raw==="about"){
+    input.value="";
+    if(view.name!=="about")aboutReturnView=copy(view);
+    go("about");
+    return true;
+  }
+  if(raw==="command-doc"||raw==="read-doc"){
+    input.value="";
+    openCommandDoc();
+    return true;
+  }
+  if(raw==="request-watch"){
+    input.value="";
+    requestNavigation({name:"creators"});
+    return true;
+  }
+  if(raw==="config"){
+    input.value="";
+    if(configDraft)requestNavigation({name:"config"});
+    else startConfig();
+    return true;
+  }
+  if(raw==="stats"){
+    input.value="";
+    requestNavigation({name:"stats",scope:"period"});
+    return true;
+  }
+  if(raw==="history"){
+    input.value="";
+    if(view.name!=="history")historyReturnView=copy(view);
+    go("history");
+    return true;
+  }
+  if(raw==="diag"){
+    input.value="";
+    if(view.name!=="diag")diagReturnView=copy(view);
+    go("diag");
+    return true;
+  }
+  if(raw==="flush-cache"){
+    input.value="";
+    if(view.name!=="flushCache")flushCacheReturnView=copy(view);
+    go("flushCache");
+    return true;
+  }
+  if(raw==="export-data"){
+    input.value="";
+    exportData(msg);
+    return true;
+  }
+  if(raw==="support"){
+    input.value="";
+    openSupport();
+    return true;
+  }
+  if(raw==="legal"){
+    input.value="";
+    openLegal();
+    return true;
+  }
+  if(raw==="delete-data"){
+    input.value="";
+    if(view.name!=="deleteData")deleteDataReturnView=copy(view);
+    go("deleteData");
+    return true;
+  }
+  if(raw===PATCHED_CREDIT_CODE){
+    let out=document.getElementById(msg);
+    if(out)out.textContent="COMMAND PATCHED. HOW DID YOU FIND THAT!?";
+    input.value="";
+    return true;
+  }
+  if(raw==="credit-eject"){
+    input.value="";
+    if(view.name!=="creditEject")creditEjectReturnView=copy(view);
+    go("creditEject");
+    return true;
+  }
+  return false;
+}
+function commandPrompt(){
+  let id="cmd"+Math.random().toString(36).slice(2),msg=id+"m";
+  setTimeout(()=>{
+    let input=document.getElementById(id);
+    if(!input)return;
+    input.addEventListener("keydown",async e=>{
+      if(e.key==="Escape"){input.value="";input.blur();e.preventDefault();return}
+      if(e.key!=="Enter")return;
+      e.preventDefault();
+      let raw=input.value.trim().toLowerCase();
+      if(!raw)return;
+      raw=raw.replace(/^\[|\]$/g,"").trim();
+      if(await handleHiddenCommand(raw,msg,input))return;
+      if(/^\d+$/.test(raw))raw=String(parseInt(raw,10));
+      let ok=clickShortcut(raw);
+      if(!ok){
+        let out=document.getElementById(msg);
+        if(out)out.textContent=`COMMAND NOT AVAILABLE: ${raw.toUpperCase()}`;
+        input.value="";
+      }
+    });
+  },0);
+  return `<div class="command-line"><span class="command-prefix">&gt;</span><span class="command-entry"><input id="${id}" class="command-input" type="text" inputmode="text" enterkeyhint="go" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder=" " aria-label="Terminal command"><span class="command-idle-cursor">_</span></span></div><div id="${msg}" class="command-msg tiny warn"></div>`;
+}
+function normalizeCapsToken(token){
+  let m=String(token).match(/^([^A-Za-z0-9]*)([A-Za-z0-9](?:[A-Za-z0-9'’&+.-]*[A-Za-z0-9])?)([^A-Za-z0-9]*)$/);
+  if(!m)return token;
+  let core=m[2],letters=(core.match(/[A-Za-z]/g)||[]);
+  if(letters.length<3||/\d/.test(core)||core!==core.toUpperCase())return token;
+  let key=core.replace(/[.'’&+\-]/g,"").toUpperCase();
+  if(PRESERVE_CAPS.has(core.toUpperCase())||PRESERVE_CAPS.has(key))return token;
+  let lowered=core.toLowerCase().replace(/[a-z]/,c=>c.toUpperCase());
+  return m[1]+lowered+m[3];
+}
+function normalizeVideoTitle(title){
+  if(!st?.settings?.normalizeCaps)return String(title);
+  return String(title).split(/(\s+)/).map(part=>/^\s+$/.test(part)?part:normalizeCapsToken(part)).join("");
+}
+function statRow(label,value){return `<div class="stat-row"><div class="stat-label">${esc(label)}</div><div class="stat-value-row"><span class="stat-dots"></span><span class="stat-value">${esc(value)}</span></div></div>`}
+function fmtStatTime(seconds){if(seconds===null||seconds===undefined)return"N/A";seconds=Math.max(0,Math.round(Number(seconds)||0));let d=Math.floor(seconds/86400),h=Math.floor((seconds%86400)/3600),m=Math.floor((seconds%3600)/60);if(d)return`${d}D ${h}H ${m}M`;if(h)return`${h}H ${m}M`;return`${m}M`}
+function statDate(value){return value?new Date(value).toLocaleString():"N/A"}
+function trackingSinceLine(value){
+  let id="track"+Math.random().toString(36).slice(2);
+  setTimeout(()=>{
+    let el=document.getElementById(id);
+    if(!el)return;
+    el.addEventListener("click",()=>{
+      let now=Date.now();
+      signalTapCount=(now-signalTapLast<=3000)?signalTapCount+1:1;
+      signalTapLast=now;
+      if(signalTapCount>=7){
+        signalTapCount=0;
+        signalTapLast=0;
+        signalReturnView=copy(view);
+        go("signal");
+      }
+    });
+  },0);
+  return `<div id="${id}" class="tiny dim tracking-trigger">TRACKING SINCE: ${esc(statDate(value))}</div>`;
+}
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+async function typeSignalText(el,text,delay=58){
+  el.textContent="";
+  for(let i=0;i<text.length;i++){
+    if(view.name!=="signal")return false;
+    el.textContent+=text[i];
+    await sleep(delay);
+  }
+  return true;
+}
+function returnSignal(){
+  let target=signalReturnView?copy(signalReturnView):{name:"stats",scope:"period"};
+  signalReturnView=null;
+  view=target;
+  render();
+}
+async function signal(){
+  app.innerHTML=`<div class="signal-screen"><div id="signalText" class="signal-terminal-line"></div><div id="signalFlight" class="signal-flight"></div><div id="signalDone" class="signal-terminal-line"></div><div id="signalActions" class="signal-actions"></div></div>`;
+  let text=document.getElementById("signalText"),flight=document.getElementById("signalFlight"),done=document.getElementById("signalDone"),actions=document.getElementById("signalActions");
+  await sleep(350);
+  if(!(await typeSignalText(text,"SIGNAL ACQUIRED...",72)))return;
+  await sleep(450);
+
+  const satellite="[==]o[==]";
+  const width=Math.max(24,Math.floor((flight.clientWidth||app.clientWidth||320)/12));
+  const last=Math.max(0,width-satellite.length);
+  const frames=Math.max(20,last+1);
+  for(let frame=0;frame<frames;frame++){
+    if(view.name!=="signal")return;
+    let pos=Math.round((frame/(frames-1||1))*last);
+    let trail=".".repeat(Math.min(pos,Math.max(0,pos-1)));
+    flight.textContent=(trail+" ".repeat(Math.max(0,pos-trail.length))+satellite).slice(0,width);
+    await sleep(105);
+  }
+
+  await sleep(350);
+  if(!(await typeSignalText(done,"TRANSMISSION COMPLETE.",54)))return;
+  await sleep(250);
+  if(view.name!=="signal")return;
+  actions.innerHTML=item("[R] RETURN",()=>returnSignal(),false,true)+commandPrompt();
+}
+function yes(x){return x?"YES":"NO"}function day(n){return["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][n]}function sortName(x){return{name:"Name",upload:"Upload date",length:"Length"}[x]}function intName(x){return x[0].toUpperCase()+x.slice(1)}
+function rem(ms){if(ms<=0)return"READY";let s=Math.ceil(ms/1000),h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60);s%=60;return `${String(h).padStart(2,"0")}H ${String(m).padStart(2,"0")}M ${String(s).padStart(2,"0")}S`}
+function go(name,extra={}){view={name,...extra};render()}
+function goTarget(target){view=copy(target||{name:"home"});render()}
+const CONFIG_VIEW_NAMES=new Set(["config","amount","cooldown","creatorCfg","addCreator","removeCreator","reorder","reorderLeave","configLeave"]);
+function isConfigTarget(target){return !!target&&CONFIG_VIEW_NAMES.has(target.name)}
+function requestNavigation(target){target=typeof target==="string"?{name:target}:copy(target||{name:"home"});if(reorderDraft&&target.name!=="reorder"&&target.name!=="reorderLeave"){reorderDirty=reorderChanged();if(reorderDirty){reorderLeaveTarget=target;reorderLeaveReturnView=copy(view);return go("reorderLeave")}clearReorder()}if(configDraft&&!isConfigTarget(target)){refreshConfigDirty();if(configDirty){configLeaveTarget=target;configLeaveReturnView=copy(view);return go("configLeave")}clearConfig()}goTarget(target)}
+async function updateSettings(mutator,nextView=null){let s=copy(st.settings);mutator(s);try{st=await api("/api/settings",{method:"PUT",body:{settings:s}});stateFetchedAt=Date.now();if(nextView)go(nextView);else render()}catch(e){showError(e.message)}}
+function startConfig(){configDraft=copy(st.settings);configDirty=false;go("config")}
+function ensureConfigDraft(){if(!configDraft)configDraft=copy(st.settings);return configDraft}
+function configChanged(){return !!configDraft&&JSON.stringify(configDraft)!==JSON.stringify(st.settings)}
+function refreshConfigDirty(){configDirty=configChanged();return configDirty}
+function updateConfigDraft(mutator,nextView=null){let s=ensureConfigDraft();mutator(s);refreshConfigDirty();if(nextView)go(nextView);else render()}
+function clearConfig(){configDraft=null;configDirty=false}
+async function saveConfig(target={name:"home"}){let s=copy(ensureConfigDraft());try{st=await api("/api/settings",{method:"PUT",body:{settings:s}});stateFetchedAt=Date.now();clearConfig();configLeaveTarget=null;configLeaveReturnView=null;goTarget(target)}catch(e){showError(e.message,()=>go("config"))}}
+function cancelConfig(){clearConfig();go("home")}
+function leaveConfig(target={name:"home"}){requestNavigation(target)}
+function cancelConfigLeave(){let target=configLeaveReturnView?copy(configLeaveReturnView):{name:"config"};configLeaveTarget=null;configLeaveReturnView=null;goTarget(target)}
+function discardConfigAndExit(){let target=configLeaveTarget?copy(configLeaveTarget):{name:"home"};configLeaveTarget=null;configLeaveReturnView=null;clearConfig();goTarget(target)}
+function saveConfigAndExit(){let target=configLeaveTarget?copy(configLeaveTarget):{name:"home"};saveConfig(target)}
+function configLeave(){app.innerHTML=head("CONFIG / UNSAVED CHANGES")+`<div class="warn">UNSAVED CHANGES WILL BE LOST.</div><div>LEAVE CONFIG? [Y/N/S]</div><div class="space"></div>`+item("[Y] YES",()=>discardConfigAndExit())+item("[N] NO",()=>cancelConfigLeave(),false,true)+item("[S] SAVE AND EXIT",()=>saveConfigAndExit())+commandPrompt()}
+function showError(msg,back=()=>render()){app.innerHTML=head()+`<div class="err">${esc(msg)}</div><div class="space"></div>`+item("[B] BACK",back)+commandPrompt()}
+function tickHomeStatus(){if(view.name!=="home")return;let el=document.getElementById("requestStatus");if(el){let c=cooldownMs();el.textContent=`REQUEST STATUS: ${c&&st.settings.block?"COOLDOWN "+rem(c):"READY"}`;if(c&&st.settings.block)setTimeout(tickHomeStatus,1000)}}
+function home(){let c=cooldownMs();let warning=st.youtubeConfigured?"":`<div class="warn tiny">YOUTUBE API: NOT CONFIGURED</div>`;app.innerHTML=head()+item("[1] REQUEST A WATCH",()=>requestNavigation({name:"creators"}))+item("[2] CONFIG",()=>startConfig())+item("[3] STATS",()=>requestNavigation({name:"stats",scope:"period"}))+item("[4] COMMAND DOC",()=>openCommandDoc())+`<div class="space"></div><div>CREDITS: ${st.credits}</div><div class="tiny dim">NEXT ALLOWANCE: ${new Date(st.nextReset).toLocaleString()}</div><div id="requestStatus" class="tiny dim">REQUEST STATUS: ${c&&st.settings.block?"COOLDOWN "+rem(c):"READY"}</div>${warning}`+commandPrompt();if(c&&st.settings.block)setTimeout(tickHomeStatus,1000)}
+
+async function stats(){
+  let scope=view.scope==="all"?"all":"period",scopeLabel=scope==="all"?"ALL TIME":"CURRENT PERIOD";
+  app.innerHTML=head(`STATS / ${scopeLabel}`)+`<div>LOADING STATS...</div>`;
+  try{
+    let s=await api(`/api/stats?scope=${scope}`);
+    let h=head(`STATS / ${scopeLabel}`);
+    h+=trackingSinceLine(s.trackingSince);
+    if(scope==="period"){
+      h+=`<div class="tiny dim">PERIOD: ${new Date(s.periodStart).toLocaleDateString()} - ${new Date(s.periodEnd).toLocaleDateString()}</div>`;
+      h+=`<div class="stat-section"><div class="stat-title">CURRENT ALLOWANCE PERIOD</div>`;
+      h+=statRow("WATCHES REQUESTED",s.watchRequests);
+      h+=statRow("CREDITS SPENT",s.creditsSpent);
+      h+=statRow("CREDITS REMAINING",s.creditsRemaining);
+      h+=statRow("ALLOWANCE USED",`${s.allowanceUsedPct}%`);
+      h+=statRow("VIDEO TIME REQUESTED",fmtStatTime(s.videoSeconds));
+      h+=`</div>`;
+    }else{
+      h+=`<div class="stat-section"><div class="stat-title">ALL TIME</div>`;
+      h+=statRow("WATCH REQUESTS",s.watchRequests);
+      h+=statRow("CREDITS SPENT",s.creditsSpent);
+      h+=statRow("VIDEO TIME REQUESTED",fmtStatTime(s.videoSeconds));
+      h+=`</div>`;
+    }
+    h+=`<div class="stat-section"><div class="stat-title">WATCH BEHAVIOR</div>`;
+    h+=statRow("AVG. VIDEO LENGTH",fmtStatTime(s.avgVideoSeconds));
+    h+=statRow("AVG. TIME BETWEEN REQUESTS",fmtStatTime(s.avgGapSeconds));
+    h+=statRow("REWATCHES",s.rewatches);
+    h+=statRow("MANUAL OVERRIDES",s.manualOverrides);
+    h+=`</div>`;
+    h+=`<div class="stat-section"><div class="stat-title">CREATORS</div>`;
+    h+=statRow("UNIQUE CREATORS WATCHED",s.uniqueCreators);
+    h+=statRow("MOST WATCHED CREATOR",s.mostWatchedCreator?`${s.mostWatchedCreator.name} (${s.mostWatchedCreator.count})`:"N/A");
+    h+=`</div><hr>`;
+    h+=item("[P] CURRENT PERIOD",()=>go("stats",{scope:"period"}),scope==="period");
+    h+=item("[A] ALL TIME",()=>go("stats",{scope:"all"}),scope==="all");
+    h+=item("[B] BACK",()=>go("home"));
+    h+=commandPrompt();
+    app.innerHTML=h;
+  }catch(e){
+    app.innerHTML=head(`STATS / ${scopeLabel}`)+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[B] BACK",()=>go("home"))+commandPrompt();
+  }
+}
+
+
+function legalGate(){
+  let h=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30</div><hr><div>BEFORE CONTINUING</div><div class="space"></div><div class="legal-copy"><div>VIDEO DESTIM TERMINAL USES YOUTUBE API SERVICES TO RETRIEVE PUBLIC CHANNEL AND VIDEO METADATA.</div><div>BY CONTINUING, YOU ACKNOWLEDGE THE VIDEO DESTIM TERMINAL PRIVACY NOTICE AND TERMS, AND AGREE TO BE BOUND BY THE YOUTUBE TERMS OF SERVICE.</div></div><hr>`;
+  h+=item("[1] PRIVACY NOTICE",()=>openExternal("/privacy"));
+  h+=item("[2] VIDEO DESTIM TERMINAL TERMS",()=>openExternal("/terms"));
+  h+=item("[3] YOUTUBE TERMS OF SERVICE",()=>openExternal("https://www.youtube.com/t/terms"));
+  h+=item("[4] GOOGLE PRIVACY POLICY",()=>openExternal("https://policies.google.com/privacy"));
+  h+=`<hr>`+item("[A] AGREE AND CONTINUE",()=>{try{localStorage.setItem(LEGAL_ACCEPT_KEY,"1")}catch(e){}render()},false,true);
+  app.innerHTML=h;
+}
+function openSupport(){if(view.name!=="support")supportReturnView=copy(view);requestNavigation({name:"support"})}
+function returnSupport(){let target=supportReturnView?copy(supportReturnView):{name:"home"};supportReturnView=null;view=target;render()}
+function support(){app.innerHTML=head("SUPPORT")+`<div>OPEN CREATOR'S TIP JAR? [Y/N]</div><div class="space"></div>`+item("[Y] YES",()=>{openExternal("https://ko-fi.com/vespux");returnSupport()})+item("[N] NO",()=>returnSupport(),false,true)+commandPrompt()}
+function openLegal(){if(view.name!=="legal")legalReturnView=copy(view);go("legal")}
+function returnLegal(){let target=legalReturnView?copy(legalReturnView):{name:"home"};legalReturnView=null;view=target;render()}
+function legal(){
+  let h=head("LEGAL")+`<div class="legal-copy"><div>VIDEO DESTIM TERMINAL IS SELF-HOSTED. THE PROJECT AUTHOR DOES NOT RECEIVE YOUR INSTANCE DATABASE, CONFIGURATION, OR WATCH-REQUEST HISTORY.</div><div>THIS CLIENT USES YOUTUBE API SERVICES FOR PUBLIC CHANNEL / VIDEO METADATA. THIRD-PARTY SERVICES HAVE THEIR OWN TERMS AND PRIVACY PRACTICES.</div></div><hr>`;
+  h+=item("[1] PRIVACY NOTICE",()=>openExternal("/privacy"));
+  h+=item("[2] VIDEO DESTIM TERMINAL TERMS",()=>openExternal("/terms"));
+  h+=item("[3] YOUTUBE TERMS OF SERVICE",()=>openExternal("https://www.youtube.com/t/terms"));
+  h+=item("[4] GOOGLE PRIVACY POLICY",()=>openExternal("https://policies.google.com/privacy"));
+  h+=`<hr>`+item("[D] DELETE ALL LOCAL DATA",()=>{deleteDataReturnView=copy(view);go("deleteData")});
+  h+=item("[R] RETURN",()=>returnLegal(),false,true)+commandPrompt();
+  app.innerHTML=h;
+}
+function returnDeleteData(){let target=deleteDataReturnView?copy(deleteDataReturnView):{name:"home"};deleteDataReturnView=null;view=target;render()}
+function deleteData(){
+  app.innerHTML=head("DELETE LOCAL DATA")+`<div class="warn">THIS WILL PERMANENTLY DELETE ALL VIDEO DESTIM TERMINAL LOCAL DATA.</div><div class="tiny dim">CREATORS, CONFIG, CREDITS, WATCHED STATE, REQUEST HISTORY, STATS, AND CACHE WILL BE RESET. THIS DOES NOT DELETE ANYTHING FROM YOUTUBE.</div><div class="space"></div><div>PROCEED? [Y/N]</div><div class="space"></div>`+item("[Y] YES",()=>confirmDeleteData())+item("[N] NO",()=>returnDeleteData(),false,true)+commandPrompt();
+}
+async function confirmDeleteData(){
+  app.innerHTML=head("DELETE LOCAL DATA")+`<div>DELETING LOCAL DATA...</div>`;
+  try{
+    st=await api("/api/data/delete",{method:"POST"});
+    stateFetchedAt=Date.now();
+    configDraft=null;configDirty=false;reorderDraft=null;reorderDirty=false;overridePinValue=null;
+    deleteDataReturnView=null;supportReturnView=null;configLeaveTarget=null;configLeaveReturnView=null;reorderLeaveTarget=null;reorderLeaveReturnView=null;view={name:"home"};render();
+    setTimeout(()=>{let p=[...document.querySelectorAll(".command-msg")].pop();if(p)p.textContent="LOCAL DATA DELETED."},0);
+  }catch(e){app.innerHTML=head("DELETE LOCAL DATA")+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[R] RETURN",()=>returnDeleteData(),false,true)+commandPrompt()}
+}
+
+function returnAbout(){let target=aboutReturnView?copy(aboutReturnView):{name:"home"};aboutReturnView=null;view=target;render()}
+function about(){app.innerHTML=head("ABOUT")+`<div>vibe-coded by Vespux 2026.08.17 - ???</div><div>Developed with YouTube API</div><div class="space"></div>`+item("[R] RETURN",()=>returnAbout(),false,true)+commandPrompt()}
+function openCommandDoc(){if(view.name!=="readDoc")readDocReturnView=copy(view);requestNavigation({name:"readDoc"})}
+function returnReadDoc(){let target=readDocReturnView?copy(readDocReturnView):{name:"home"};readDocReturnView=null;view=target;render()}
+function readDoc(){
+  let h=head("COMMAND DOC");
+  h+=`<div>GLOBAL COMMANDS</div><div class="space"></div>`;
+  h+=docCommand("request-watch","OPEN REQUEST A WATCH",()=>requestNavigation({name:"creators"}));
+  h+=docCommand("config","OPEN CONFIG",()=>{if(configDraft)requestNavigation({name:"config"});else startConfig()});
+  h+=docCommand("stats","OPEN CURRENT-PERIOD STATS",()=>requestNavigation({name:"stats",scope:"period"}));
+  h+=docCommand("command-doc","SHOW THIS COMMAND REFERENCE",()=>openCommandDoc());
+  h+=docCommand("about","SHOW BUILD / AUTHOR INFO",()=>{aboutReturnView=copy(view);go("about")});
+  h+=docCommand("history","SHOW THE 10 MOST RECENT WATCH REQUESTS",()=>{historyReturnView=copy(view);go("history")});
+  h+=docCommand("diag","SHOW BACKEND / DATABASE / CACHE DIAGNOSTICS",()=>{diagReturnView=copy(view);go("diag")});
+  h+=docCommand("flush-cache","CLEAR VIDEO CACHE AFTER Y/N CONFIRMATION",()=>{flushCacheReturnView=copy(view);go("flushCache")});
+  h+=docCommand("export-data","DOWNLOAD CONFIG, CREATORS, AND WATCH HISTORY JSON",()=>exportData("commandDocMsg"));
+  h+=docCommand("support","OPEN THE CREATOR SUPPORT / TIP-JAR PROMPT",()=>openSupport());
+  h+=docCommand("legal","SHOW PRIVACY / TERMS / DATA CONTROLS",()=>openLegal());
+  h+=docCommand("delete-data","PERMANENTLY RESET ALL LOCAL VIDEO DESTIM TERMINAL DATA AFTER Y/N CONFIRMATION",()=>{deleteDataReturnView=copy(view);go("deleteData")});
+  h+=docCommand("credit-eject","REMOVE 1 WATCH CREDIT AFTER Y/N CONFIRMATION",()=>{creditEjectReturnView=copy(view);go("creditEject")});
+  h+=`<div id="commandDocMsg" class="tiny dim"></div>`;
+  h+=`<hr><div>CONTEXT COMMANDS</div><div class="space"></div>`;
+  h+=`<div>&lt;number&gt;</div><div class="tiny dim">SELECT A VISIBLE NUMBERED OPTION</div><div class="space"></div>`;
+  h+=`<div>&lt;letter&gt;</div><div class="tiny dim">RUN A VISIBLE [LETTER] ACTION</div>`;
+  h+=`<hr>`+item("[R] RETURN",()=>returnReadDoc(),false,true)+commandPrompt();
+  app.innerHTML=h;
+}
+
+function utilReturn(slot,fallback={name:"home"}){
+  let target=slot?copy(slot):fallback;
+  view=target;
+  render();
+}
+
+function returnHistory(){let target=historyReturnView?copy(historyReturnView):{name:"home"};historyReturnView=null;view=target;render()}
+async function history(){
+  app.innerHTML=head("HISTORY")+`<div>READING WATCH HISTORY...</div>`;
+  try{
+    let data=await api("/api/history?limit=10");
+    let h=head("HISTORY");
+    h+=`<div class="tiny dim">LOCAL VIDEO DESTIM TERMINAL REQUEST HISTORY — NOT YOUTUBE WATCH HISTORY.</div><hr>`;
+    if(!data.items.length){
+      h+=`<div class="dim">NO WATCH REQUESTS RECORDED.</div>`;
+    }else{
+      data.items.forEach((x,i)=>{
+        let flags=[];
+        if(x.wasRewatch)flags.push("REWATCH");
+        if(x.overrideUsed)flags.push("OVERRIDE");
+        let cost=`${x.creditCost} CREDIT${x.creditCost===1?"":"S"}`;
+        h+=`<div class="video"><div class="video-title">${i+1}. ${terminalVideoTitle(x.videoTitle)}</div><div class="tiny dim">${esc(x.creatorName)} · ${statDate(x.requestedAt)}</div><div class="tiny dim">${cost}${flags.length?" · "+flags.join(" · "):""}</div></div>`;
+      });
+    }
+    h+="<hr>"+item("[R] RETURN",()=>returnHistory(),false,true)+commandPrompt();
+    app.innerHTML=h;
+  }catch(e){
+    app.innerHTML=head("HISTORY")+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[R] RETURN",()=>returnHistory(),false,true)+commandPrompt();
+  }
+}
+
+function returnDiag(){let target=diagReturnView?copy(diagReturnView):{name:"home"};diagReturnView=null;view=target;render()}
+function fmtBytes(bytes){
+  bytes=Math.max(0,Number(bytes)||0);
+  if(bytes<1024)return`${bytes} B`;
+  if(bytes<1024*1024)return`${(bytes/1024).toFixed(1)} KB`;
+  return`${(bytes/(1024*1024)).toFixed(1)} MB`;
+}
+async function diag(){
+  app.innerHTML=head("DIAG")+`<div>RUNNING DIAGNOSTICS...</div>`;
+  try{
+    let d=await api("/api/diag");
+    let h=head("DIAG");
+    h+=statRow("APP VERSION",d.appVersion);
+    h+=statRow("BACKEND",d.backend);
+    h+=statRow("DATABASE",d.database);
+    h+=statRow("YOUTUBE API",d.youtubeConfigured?"CONFIGURED":"NOT CONFIGURED");
+    h+=statRow("DATABASE SIZE",fmtBytes(d.databaseBytes));
+    h+=statRow("SERVER TIME",statDate(d.serverTime));
+    h+="<hr>"+item("[R] RETURN",()=>returnDiag(),false,true)+commandPrompt();
+    app.innerHTML=h;
+  }catch(e){
+    app.innerHTML=head("DIAG")+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[R] RETURN",()=>returnDiag(),false,true)+commandPrompt();
+  }
+}
+
+function returnFlushCache(){let target=flushCacheReturnView?copy(flushCacheReturnView):{name:"home"};flushCacheReturnView=null;view=target;render()}
+function flushCache(){
+  if(view.done){
+    app.innerHTML=head("FLUSH CACHE")+`<div>CACHE FLUSHED.</div><div>${Number(view.removed)||0} CACHE ENTR${Number(view.removed)===1?"Y":"IES"} REMOVED.</div><div class="space"></div>`+item("[R] RETURN",()=>returnFlushCache(),false,true)+commandPrompt();
+    return;
+  }
+  app.innerHTML=head("FLUSH CACHE")+`<div>THIS WILL CLEAR ALL CACHED CREATOR VIDEO LISTS.</div><div class="tiny dim">CREATORS, WATCHES, STATS, AND CONFIG WILL NOT BE CHANGED.</div><div class="space"></div><div>PROCEED? [Y/N]</div><div class="space"></div>`+item("[Y] YES",()=>confirmFlushCache())+item("[N] NO",()=>returnFlushCache(),false,true)+commandPrompt();
+}
+async function confirmFlushCache(){
+  app.innerHTML=head("FLUSH CACHE")+`<div>FLUSHING CACHE...</div>`;
+  try{
+    let data=await api("/api/cache/flush",{method:"POST"});
+    go("flushCache",{done:true,removed:data.removed});
+  }catch(e){
+    app.innerHTML=head("FLUSH CACHE")+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[R] RETURN",()=>returnFlushCache(),false,true)+commandPrompt();
+  }
+}
+
+function exportData(msg){
+  try{
+    let a=document.createElement("a");
+    a.href="/api/export";
+    a.download="";
+    a.style.display="none";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    let out=document.getElementById(msg);
+    if(out)out.textContent="EXPORT REQUESTED.";
+  }catch(e){
+    let out=document.getElementById(msg);
+    if(out)out.textContent="EXPORT FAILED.";
+  }
+}
+
+function returnCreditEject(){let target=creditEjectReturnView?copy(creditEjectReturnView):{name:"home"};creditEjectReturnView=null;view=target;render()}
+function creditEject(){
+  app.innerHTML=head("CREDIT EJECT")+`<div>THIS WILL REMOVE 1 WATCH CREDIT.</div><div class="warn">THIS CANNOT BE UNDONE.</div><div class="space"></div><div>PROCEED? [Y/N]</div><div class="space"></div>`+item("[Y] YES",()=>confirmCreditEject())+item("[N] NO",()=>returnCreditEject(),false,true)+commandPrompt()
+}
+async function confirmCreditEject(){
+  app.innerHTML=head("CREDIT EJECT")+`<div>EJECTING CREDIT...</div>`;
+  try{
+    st=await api("/api/credits/eject",{method:"POST"});
+    stateFetchedAt=Date.now();
+    let balance=st.credits;
+    let target=creditEjectReturnView?copy(creditEjectReturnView):{name:"home"};
+    creditEjectReturnView=null;
+    view=target;
+    render();
+    setTimeout(()=>{
+      let prompts=[...document.querySelectorAll(".command-msg")];
+      let out=prompts[prompts.length-1];
+      if(out)out.textContent=`CREDIT EJECTED. BALANCE: ${balance}`;
+    },0);
+  }catch(e){
+    app.innerHTML=head("CREDIT EJECT")+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[R] RETURN",()=>returnCreditEject(),false,true)+commandPrompt()
+  }
+}
+
+function config(){let s=ensureConfigDraft();refreshConfigDirty();let h=head("CONFIG");h+=cfg(1,"CREDIT ALLOWANCE INTERVAL",intName(s.interval).toUpperCase(),()=>updateConfigDraft(x=>{let a=["daily","weekly","monthly","yearly"];x.interval=a[(a.indexOf(x.interval)+1)%4]}));h+=cfg(2,"WEEKLY RESET DAY",s.interval==="weekly"?day(s.weekDay).toUpperCase():"N/A",()=>updateConfigDraft(x=>x.weekDay=(x.weekDay+1)%7),s.interval!=="weekly");h+=cfg(3,"CREDIT ALLOWANCE AMOUNT",s.amount,()=>go("amount"));h+=cfg(4,"UNUSED CREDITS ROLLOVER",yes(s.rollover),()=>updateConfigDraft(x=>x.rollover=!x.rollover));h+=cfg(5,"AVAILABLE CREATORS",st.creators.length,()=>go("creatorCfg"));h+=item("[6] REORDER CREATORS",()=>startReorder());h+=cfg(7,"BLOCK CONSECUTIVE WATCHES?",yes(s.block),()=>updateConfigDraft(x=>x.block=!x.block));h+=cfg(8,"REQUEST COOLDOWN",s.block?`${s.cdH}H ${s.cdM}M`:"N/A",()=>go("cooldown"),!s.block);h+=cfg(9,"DEFAULT SORT FOR VIDEOS",sortName(s.sort).toUpperCase(),()=>updateConfigDraft(x=>{let a=["name","upload","length"];x.sort=a[(a.indexOf(x.sort)+1)%3]}));h+=cfg(10,"WATCHED VIDEOS COST CREDITS?",yes(s.repeatCosts),()=>updateConfigDraft(x=>x.repeatCosts=!x.repeatCosts));h+=cfg(11,"NORMALIZE VIDEO TITLE CAPS?",yes(s.normalizeCaps),()=>updateConfigDraft(x=>x.normalizeCaps=!x.normalizeCaps));h+="<hr>"+item("[S] SAVE",()=>saveConfig(),false,true)+item("[C] CANCEL",()=>cancelConfig())+item("[B] BACK",()=>leaveConfig());if(configDirty)h+=`<div class="tiny warn">UNSAVED CHANGES</div>`;h+=commandPrompt();app.innerHTML=h}
+function amount(){let s=ensureConfigDraft();app.innerHTML=head("CONFIG / ALLOWANCE AMOUNT")+`<div>ENTER CREDIT ALLOWANCE:</div><div class="space"></div><input id="n" type="number" inputmode="numeric" min="0" value="${s.amount}"><div class="space"></div>`+item("[S] SAVE",()=>updateConfigDraft(x=>x.amount=Math.max(0,parseInt(document.getElementById("n").value||0)),"config"),false,true)+item("[C] CANCEL",()=>go("config"))+commandPrompt()}
+function cooldown(){let s=ensureConfigDraft();app.innerHTML=head("CONFIG / REQUEST COOLDOWN")+`<div>HOURS:</div><input id="h" type="number" inputmode="numeric" min="0" value="${s.cdH}"><div class="space"></div><div>MINUTES:</div><input id="m" type="number" inputmode="numeric" min="0" max="59" value="${s.cdM}"><div class="space"></div>`+item("[S] SAVE",()=>updateConfigDraft(x=>{x.cdH=Math.max(0,parseInt(document.getElementById("h").value||0));x.cdM=Math.min(59,Math.max(0,parseInt(document.getElementById("m").value||0)))},"config"),false,true)+item("[C] CANCEL",()=>go("config"))+commandPrompt()}
+function creatorCfg(){let h=head("CONFIG / AVAILABLE CREATORS");if(view.msg)h+=`<div>${esc(view.msg)}</div><div class="space"></div>`;if(!st.creators.length)h+=`<div class="dim">NO CREATORS ADDED.</div>`;st.creators.forEach((c,i)=>h+=`<div>${creatorPrefix(i+1,st.creators.length)}${esc(c.name)}${c.resolved?"":" <span class=\"dim tiny\">[UNRESOLVED]</span>"}</div><div class="tiny dim">${esc(c.link)}</div>`);h+="<hr>"+item("[A] ADD CREATOR",()=>go("addCreator"))+item("[R] REMOVE CREATOR",()=>go("removeCreator"))+item("[B] BACK",()=>go("config"))+commandPrompt();app.innerHTML=h}
+function addCreator(){app.innerHTML=head("CONFIG / AVAILABLE CREATORS / ADD CREATOR")+`<div>PASTE YOUTUBE CHANNEL LINK:</div><div class="space"></div><input id="link" inputmode="url" placeholder="https://youtube.com/@..."><div class="tiny dim">SUPPORTED: @HANDLE, /CHANNEL/, AND LEGACY /USER/ LINKS.</div><div class="space"></div>`+item("[A] ADD",async()=>{let l=document.getElementById("link").value.trim();if(!l)return;app.innerHTML=head("CONFIG / AVAILABLE CREATORS / ADD CREATOR")+`<div>RESOLVING CHANNEL...</div>`;try{st=await api("/api/creators",{method:"POST",body:{link:l}});stateFetchedAt=Date.now();let added=st.creators[st.creators.length-1];go("creatorCfg",{msg:`ADDED: ${added?added.name.toUpperCase():"CREATOR"}`})}catch(e){view={name:"addCreator"};app.innerHTML=head("CONFIG / AVAILABLE CREATORS / ADD CREATOR")+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[B] BACK",()=>go("addCreator"))+commandPrompt()}})+item("[C] CANCEL",()=>go("creatorCfg"))+commandPrompt()}
+function removeCreator(){let h=head("CONFIG / AVAILABLE CREATORS / REMOVE CREATOR")+"<div>SELECT CREATOR TO REMOVE:</div><div class=space></div>";st.creators.forEach((c,i)=>h+=item(`${creatorPrefix(i+1,st.creators.length,true)}${esc(c.name)}`,async()=>{try{st=await api(`/api/creators/${c.id}`,{method:"DELETE"});stateFetchedAt=Date.now();go("creatorCfg")}catch(e){showError(e.message,()=>go("creatorCfg"))}}));h+="<hr>"+item("[C] CANCEL",()=>go("creatorCfg"))+commandPrompt();app.innerHTML=h}
+function startReorder(){reorderDraft=copy(st.creators);reorderDirty=false;go("reorder")}
+function clearReorder(){reorderDraft=null;reorderDirty=false}
+function reorderChanged(){if(!reorderDraft||reorderDraft.length!==st.creators.length)return false;return reorderDraft.some((c,i)=>c.id!==st.creators[i].id)}
+function leaveReorder(target={name:"config"}){requestNavigation(target)}
+function cancelReorderLeave(){let target=reorderLeaveReturnView?copy(reorderLeaveReturnView):{name:"reorder"};reorderLeaveTarget=null;reorderLeaveReturnView=null;goTarget(target)}
+function discardReorderAndExit(){let target=reorderLeaveTarget?copy(reorderLeaveTarget):{name:"config"};reorderLeaveTarget=null;reorderLeaveReturnView=null;clearReorder();requestNavigation(target)}
+async function saveReorder(target={name:"config"}){if(!reorderDraft)return requestNavigation(target);try{st=await api("/api/creators/reorder",{method:"POST",body:{order:reorderDraft.map(c=>c.id)}});stateFetchedAt=Date.now();clearReorder();reorderLeaveTarget=null;reorderLeaveReturnView=null;requestNavigation(target)}catch(e){showError(e.message,()=>go("reorder"))}}
+function saveReorderAndExit(){let target=reorderLeaveTarget?copy(reorderLeaveTarget):{name:"config"};saveReorder(target)}
+function reorderLeave(){app.innerHTML=head("CONFIG / REORDER CREATORS / UNSAVED CHANGES")+`<div class="warn">UNSAVED CHANGES WILL BE LOST.</div><div>LEAVE REORDER CREATORS? [Y/N/S]</div><div class="space"></div>`+item("[Y] YES",()=>discardReorderAndExit())+item("[N] NO",()=>cancelReorderLeave(),false,true)+item("[S] SAVE AND EXIT",()=>saveReorderAndExit())+commandPrompt()}
+function reorder(){if(!reorderDraft)reorderDraft=copy(st.creators);reorderDirty=reorderChanged();let h=head("CONFIG / REORDER CREATORS");reorderDraft.forEach((c,i)=>h+=`<div>${creatorPrefix(i+1,reorderDraft.length)}${esc(c.name)}</div>`);h+=`<hr>`+item("[N] SORT BY NAME",()=>{reorderDraft.sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:"base"}));reorderDirty=reorderChanged();reorder()})+item("[D] SORT BY DATE ADDED",()=>{reorderDraft.sort((a,b)=>(Number(a.addedAt)||Number(a.id))-(Number(b.addedAt)||Number(b.id)));reorderDirty=reorderChanged();reorder()})+`<hr><div>MANUAL SORT</div><div class="space"></div><div>MOVE CREATOR #:</div><input id="from" type="number" inputmode="numeric" min="1" max="${reorderDraft.length}"><div class="space"></div><div>NEW POSITION:</div><input id="to" type="number" inputmode="numeric" min="1" max="${reorderDraft.length}"><div class="space"></div>`+item("[M] MOVE",()=>{let f=parseInt(document.getElementById("from").value)-1,t=parseInt(document.getElementById("to").value)-1;if(!Number.isInteger(f)||!Number.isInteger(t)||f<0||t<0||f>=reorderDraft.length||t>=reorderDraft.length)return showError("INVALID CREATOR POSITION.",()=>go("reorder"));let moved=reorderDraft.splice(f,1)[0];reorderDraft.splice(t,0,moved);reorderDirty=reorderChanged();reorder()})+`<hr>`+item("[S] SAVE",()=>saveReorder({name:"config"}))+item("[C] CANCEL",()=>{clearReorder();go("config")})+item("[B] BACK",()=>leaveReorder());if(reorderDirty)h+=`<div class="tiny warn">UNSAVED CHANGES</div>`;h+=commandPrompt();app.innerHTML=h}
+function tickCreatorCooldown(){if(view.name!=="creators")return;let c=cooldownMs(),el=document.getElementById("creatorCooldown");if(c<=0){creators();return}if(el)el.textContent=`COOLDOWN REMAINING: ${rem(c)}`;setTimeout(tickCreatorCooldown,1000)}
+function creators(){let c=cooldownMs(),locked=c&&st.settings.block&&!overridePinValue,h=head("REQUEST A WATCH / SELECT CREATOR");if(locked){h+=`<div class="warn">REQUESTS LOCKED.</div><div id="creatorCooldown">COOLDOWN REMAINING: ${rem(c)}</div>`;h+=item("[O] MANUAL OVERRIDE",()=>go("override"));h+="<hr>"}else if(overridePinValue&&c&&st.settings.block){h+=`<div class="warn">MANUAL OVERRIDE ACTIVE.</div><div class="tiny dim">NEXT WATCH REQUEST WILL BYPASS THE CURRENT COOLDOWN.</div><hr>`}if(!st.creators.length)h+=`<div class="dim">NO AVAILABLE CREATORS. ADD ONE IN CONFIG.</div>`;else st.creators.forEach((x,i)=>h+=item(`${creatorPrefix(i+1,st.creators.length,true)}${esc(x.name)}`,()=>go("videos",{cid:x.id,sort:st.settings.sort}),locked));h+="<hr>"+item("[B] BACK",()=>go("home"))+commandPrompt();app.innerHTML=h;if(locked)setTimeout(tickCreatorCooldown,1000)}
+function overridePin(msg=""){let h=head("REQUEST A WATCH / MANUAL OVERRIDE");h+=`<div>ENTER OVERRIDE PIN:</div><div class="space"></div><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off">`;if(msg)h+=`<div class="err">${esc(msg)}</div>`;h+=`<div class="space"></div>`+item("[U] UNLOCK",async()=>{let code=document.getElementById("pin").value;try{await api("/api/override/check",{method:"POST",body:{pin:code}});overridePinValue=code;go("creators")}catch(e){overridePin(e.message)}})+item("[C] CANCEL",()=>go("creators"))+commandPrompt();app.innerHTML=h;setTimeout(()=>document.getElementById("pin")?.focus(),50)}
+function fmtDur(s){let h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?`${h}h ${String(m).padStart(2,"0")}m`:`${m}m`}
+async function videos(){let creator=st.creators.find(x=>x.id===view.cid);if(!creator)return go("creators");let sort=view.sort||st.settings.sort;app.innerHTML=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div>LOADING VIDEOS...</div>`;try{let data=await api(`/api/creators/${creator.id}/videos?sort=${encodeURIComponent(sort)}`);creator=data.creator;let vids=data.videos.map(x=>({...x,title:normalizeVideoTitle(x.title)}));let idx=st.creators.findIndex(x=>x.id===creator.id);if(idx>=0)st.creators[idx]=creator;let h=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div>SORT: ${sortName(sort).toUpperCase()}</div>`+item("[S] CHANGE SORT",()=>{let a=["name","upload","length"];go("videos",{cid:creator.id,sort:a[(a.indexOf(sort)+1)%3]})})+item("[R] REFRESH CREATOR",()=>refreshVideos(creator.id,sort))+"<hr>";if(!vids.length)h+=`<div class="dim">NO ELIGIBLE VIDEOS FOUND.</div>`;vids.forEach((x,i)=>{h+=`<div class="video">`+item(`[${String(i+1).padStart(2,"0")}] <span class="video-title ${x.watched?"watched":""}">${terminalVideoTitle(x.title)}</span>`,()=>go("confirm",{cid:creator.id,sort,video:x}))+`<div class="meta">${new Date(x.publishedAt).toLocaleDateString()} · ${fmtDur(x.durationSeconds)} · ${x.cost} CREDIT${x.cost===1?"":"S"}${x.watched?" · WATCHED":""}</div></div>`});h+="<hr>"+item("[B] BACK",()=>go("creators"))+commandPrompt();app.innerHTML=h}catch(e){app.innerHTML=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[B] BACK",()=>go("creators"))+commandPrompt()}}
+async function refreshVideos(cid,sort){let creator=st.creators.find(x=>x.id===cid);app.innerHTML=head("REQUEST A WATCH / "+(creator?creator.name.toUpperCase():"CREATOR"))+`<div>REFRESHING CREATOR...</div>`;try{await api(`/api/creators/${cid}/videos?sort=${encodeURIComponent(sort)}&refresh=1`);go("videos",{cid,sort})}catch(e){showError(e.message,()=>go("videos",{cid,sort}))}}
+function confirm(){let x=view.video,c=st.creators.find(y=>y.id===view.cid);app.innerHTML=head(`REQUEST A WATCH / ${c?c.name.toUpperCase():"VIDEOS"} / CONFIRM`)+`<div class="video-title ${x.watched?"watched":""}">${terminalVideoTitle(x.title)}</div><div class="meta">${new Date(x.publishedAt).toLocaleDateString()} · ${fmtDur(x.durationSeconds)}</div><div class="space"></div><div>THIS WILL USE ${x.cost} WATCH CREDIT${x.cost===1?"":"S"}. PROCEED? [Y/N]</div><div class="space"></div>`+item("[Y] YES",()=>proceed(),false,true)+item("[N] NO",()=>go("videos",{cid:view.cid,sort:view.sort}))+commandPrompt()}
+async function proceed(){let x=view.video,cid=view.cid,sort=view.sort;app.innerHTML=head("REQUEST A WATCH")+`<div>COMMITTING WATCH REQUEST...</div>`;try{let data=await api("/api/watch",{method:"POST",body:{videoId:x.id,creatorId:cid,videoTitle:x.title,durationSeconds:x.durationSeconds,overridePin:overridePinValue}});st=data.state;stateFetchedAt=Date.now();overridePinValue=null;let rv={name:"videos",cid,sort};try{sessionStorage.setItem("videoDestimReturnView",JSON.stringify(rv))}catch(e){}view=rv;render();setTimeout(()=>{location.href=data.url},125)}catch(e){app.innerHTML=head("REQUEST A WATCH")+`<div class="err">${esc(e.message)}</div>`+item("[B] BACK",()=>go("videos",{cid,sort}))+commandPrompt()}}
+function render(){if(!st)return;({home,stats,about,readDoc,history,diag,flushCache,creditEject,legal,support,deleteData,signal,config,configLeave,amount,cooldown,creatorCfg,addCreator,removeCreator,reorder,reorderLeave,creators,override:overridePin,videos,confirm}[view.name]||home)()}
+
+let numericShortcutBuffer="",numericShortcutTimer=null;
+function typingTarget(el){
+  if(!el)return false;
+  let tag=(el.tagName||"").toLowerCase();
+  return tag==="input"||tag==="textarea"||tag==="select"||el.isContentEditable;
+}
+function enabledShortcutButtons(){
+  return [...document.querySelectorAll('button[data-shortcut]:not(.disabled)')].filter(b=>!b.disabled&&b.offsetParent!==null);
+}
+function clickShortcut(key){
+  key=String(key).toLowerCase();
+  let btn=enabledShortcutButtons().find(b=>String(b.dataset.shortcut).toLowerCase()===key);
+  if(!btn)return false;
+  btn.click();
+  return true;
+}
+function clearNumericShortcut(){
+  numericShortcutBuffer="";
+  if(numericShortcutTimer){clearTimeout(numericShortcutTimer);numericShortcutTimer=null}
+}
+function handleNumericShortcut(digit){
+  let buttons=enabledShortcutButtons();
+  let keys=[...new Set(buttons.map(b=>b.dataset.shortcut).filter(k=>/^\d+$/.test(k)))];
+  if(!keys.length)return false;
+
+  let proposed=numericShortcutBuffer+digit;
+  let candidates=keys.filter(k=>k.startsWith(proposed));
+
+  if(!candidates.length){
+    proposed=digit;
+    candidates=keys.filter(k=>k.startsWith(proposed));
+    if(!candidates.length){clearNumericShortcut();return false}
+  }
+
+  numericShortcutBuffer=proposed;
+  if(numericShortcutTimer)clearTimeout(numericShortcutTimer);
+
+  let exact=keys.includes(proposed);
+  let longer=candidates.some(k=>k!==proposed);
+
+  if(exact&&!longer){
+    let key=numericShortcutBuffer;
+    clearNumericShortcut();
+    return clickShortcut(key);
+  }
+
+  numericShortcutTimer=setTimeout(()=>{
+    let key=numericShortcutBuffer;
+    clearNumericShortcut();
+    if(keys.includes(key))clickShortcut(key);
+  },500);
+  return true;
+}
+function clickEscapeAction(){
+  if(clickShortcut("b"))return true;
+  if(clickShortcut("c"))return true;
+  if((view.name==="confirm"||view.name==="reorderLeave"||view.name==="configLeave"||view.name==="creditEject"||view.name==="flushCache")&&clickShortcut("n"))return true;
+  return false;
+}
+document.addEventListener("keydown",e=>{
+  if(e.defaultPrevented||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(typingTarget(e.target)||typingTarget(document.activeElement))return;
+
+  let key=e.key;
+
+  if(key==="Escape"){
+    clearNumericShortcut();
+    if(clickEscapeAction())e.preventDefault();
+    return;
+  }
+
+  if(key==="Enter"){
+    clearNumericShortcut();
+    let btn=document.querySelector('button[data-default="1"]:not(.disabled)');
+    if(btn&&btn.offsetParent!==null){btn.click();e.preventDefault()}
+    return;
+  }
+
+  if(/^\d$/.test(key)){
+    if(handleNumericShortcut(key))e.preventDefault();
+    return;
+  }
+
+  if(key.length===1&&/[a-z]/i.test(key)){
+    clearNumericShortcut();
+    if(clickShortcut(key))e.preventDefault();
+  }
+});
+
+boot();
+</script></body></html>
