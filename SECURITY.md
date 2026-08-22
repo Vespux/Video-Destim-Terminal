@@ -45,6 +45,8 @@ Never commit or publish:
 
 `.gitignore` reduces accidental commits, but you should still inspect `git status` before every push.
 
+The recommended `bash setup.sh` helper collects the YouTube API key and override PIN through hidden terminal input, writes them to `.env` without printing them back to the terminal, and applies restrictive file permissions. This reduces accidental exposure during setup, but the resulting `.env` file still contains the real credentials and must be treated as private.
+
 Recommended local permission for `.env`:
 
 ```bash

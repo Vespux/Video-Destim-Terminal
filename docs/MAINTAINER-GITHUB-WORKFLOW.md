@@ -46,6 +46,7 @@ index.html
 compose.yaml
 Dockerfile
 requirements.txt
+setup.sh
 README.md
 LICENSE
 PRIVACY.md
@@ -82,6 +83,12 @@ From the release source folder:
 
 ```bash
 find . -type f -print | sort
+```
+
+Validate the guided setup helper syntax:
+
+```bash
+bash -n setup.sh
 ```
 
 Look specifically for ignored/private file types:
@@ -142,6 +149,7 @@ Before announcing it, open the repository in a private/incognito browser window 
 - README renders correctly;
 - docs links work;
 - `.env.example` contains no real secret;
+- `setup.sh` is present and contains no hard-coded API key/PIN;
 - no `.env` exists;
 - `data/` contains only `.gitkeep`;
 - no private hostname/IP appears;
@@ -163,7 +171,13 @@ GitHub will also generate its own source archives for the tag.
 
 For the strongest final sanity check, clone/download the **public** repository/release into a fresh directory or fresh VM and follow the public installation documentation exactly.
 
-Confirm:
+Confirm the guided configuration path first:
+
+```bash
+bash setup.sh
+```
+
+Then confirm:
 
 ```bash
 docker compose up -d --build

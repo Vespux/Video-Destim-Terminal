@@ -99,7 +99,40 @@ cd video-destim-terminal-v1.30
 
 Release ZIP installs are intentionally versioned by folder so an old release can remain available for rollback.
 
-## Create the environment file
+## Configure the YouTube API key and override PIN
+
+### Recommended — guided SSH setup
+
+Run:
+
+```bash
+bash setup.sh
+```
+
+The helper prompts for:
+
+```text
+ENTER YOUTUBE API KEY:
+CHOOSE OVERRIDE PIN:
+```
+
+Both values are hidden while you enter them. The helper:
+
+- requires a non-empty YouTube API key;
+- rejects API-key input containing whitespace;
+- requires the override PIN to be exactly four digits;
+- writes the values to `.env` without printing them back to the terminal;
+- preserves the other settings already present in `.env`;
+- applies `chmod 600 .env`;
+- does **not** start Docker automatically.
+
+If `.env` already exists, `setup.sh` asks before updating the stored API key and PIN. Choosing No leaves the file unchanged.
+
+The override PIN only bypasses VDT's request cooldown. It is not login/authentication.
+
+### Manual alternative
+
+If you prefer to edit the environment file yourself:
 
 ```bash
 cp .env.example .env
@@ -114,9 +147,7 @@ OVERRIDE_PIN=<your own four-digit PIN>
 
 **CHOOSE OVERRIDE PIN:** do not leave the placeholder from `.env.example` unchanged.
 
-The override PIN only bypasses VDT's request cooldown. It is not login/authentication.
-
-Protect the environment file:
+Then protect the environment file:
 
 ```bash
 chmod 600 .env
@@ -150,7 +181,7 @@ Expected result for this release:
 {"appVersion":"v1.30","ok":true,"youtubeConfigured":true}
 ```
 
-If `youtubeConfigured` is false, re-check `.env`. If the container exits, verify `OVERRIDE_PIN` is exactly four digits.
+If `youtubeConfigured` is false, rerun `bash setup.sh` or re-check `.env`. If the container exits, verify `OVERRIDE_PIN` is exactly four digits.
 
 ## Secure access from another device
 

@@ -38,7 +38,13 @@ Expected shape:
 
 ## `youtubeConfigured` is false
 
-Confirm `.env` exists beside `compose.yaml` and contains your actual key:
+Rerun the guided configuration helper:
+
+```bash
+bash setup.sh
+```
+
+Or confirm `.env` exists beside `compose.yaml` and contains your actual key:
 
 ```text
 YOUTUBE_API_KEY=...
@@ -54,7 +60,7 @@ docker compose up -d --build
 
 The public build requires `OVERRIDE_PIN` to be exactly four digits.
 
-Check `.env` and logs. The placeholder in `.env.example` is intentionally invalid until you choose a PIN.
+Run `bash setup.sh` to enter a valid PIN, or check `.env` and logs manually. The placeholder in `.env.example` is intentionally invalid until you choose a PIN.
 
 ## Permission denied when running Docker
 

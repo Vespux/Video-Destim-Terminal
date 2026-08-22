@@ -2,9 +2,9 @@
 
 **Video Destim Terminal (VDT)** is a deliberately low-stimulation, self-hosted interface for choosing videos from your own curated list of YouTube creators and then handing playback off to YouTube.
 
-VDT's goal is to be a tool that allows users a more intentional way of selecting videos to watch. It also has the option of self-imposed video consumption limits by implementing Watch Credits and Cooldowns, which can be configured in a variety of ways or disabled altogether. 
+VDT is a tool that allows users a more intentional way of selecting videos to watch. It also has the option of self-imposed video consumption limits by implementing Watch Credits and Cooldowns, which can be configured in a variety of ways. These can also be disabled if you only are only here for the terminal interface.
 
-If you, too, feel it's time we ditch the endless scrolling, attention-economy based, algorithmicly fed slop and slow down a bit, VDT is probably for you. 
+If you feel it's time we ditch the endless scrolling, attention-economy based, engagement-based & algorithmicly fed slop and slow down a bit, VDT is probably for you. 
 
 You choose which creators are available, VDT shows a compact text-first list of eligible recent uploads, and a confirmed request opens the normal YouTube watch URL in whatever browser/player you use. (We certainly have some recommendations for this that align with the goal of VDT!)
 
@@ -31,26 +31,23 @@ VDT does **not** host, proxy, download, transcode, or embed audiovisual content.
 
 ## Design goals
 
-VDT is intentionally narrow. It is not trying to recreate YouTube.
+VDT is intentionally narrow in scope, while offering intuitive controls across devices and input methods. The project favors:
 
-The project favors:
-
-- intentional selection over discovery feeds;
+- intentional video selection over discovery feeds;
 - text over thumbnails/cards;
 - a small creator list over broad browsing;
 - visible, reversible local controls;
-- self-hosting over a central hosted account;
-- touch/mouse usability without giving up keyboard/terminal-style controls.
+- self-hosting so *your* data stays with you
 
 ## Self-hosted by design
 
 There is no VDT cloud account and no central VDT database. Each installation runs independently.
 
-Your instance stores its configuration, creator list, credit state, request history, watched state, cached public metadata, and stats in a local SQLite database under `data/`. Your `.env` file contains the YouTube API key and override PIN. The project author does not receive those files from independently hosted instances.
+Your instance stores its configuration, creator list, credit state, request history, watched state, cached public metadata, and stats in a local SQLite database under `data/`. Your `.env` file contains the YouTube API key and override PIN. Those files are not shared.
 
-The default interface does load the VT323 font from Google Fonts. See [PRIVACY.md](PRIVACY.md) for the complete network/data description.
+(IMPORTANT: Please ensure YOU do NOT share your YouTube API key once it is created.)
 
-## Requirements
+## Requirements 
 
 - A Linux machine capable of running Docker Engine and Docker Compose.
 - A YouTube Data API v3 key created by the person operating the instance.
@@ -60,21 +57,28 @@ The initial public release was clean-install tested on **Ubuntu Server 26.04 LTS
 
 ## Quick start — Docker already installed
 
-Download/clone the project, enter its directory, then:
+Download/clone the project, enter its directory, then run the guided setup:
 
 ```bash
-cp .env.example .env
+bash setup.sh
 ```
 
-Edit `.env` and set:
+VDT will prompt you for:
 
-- `YOUTUBE_API_KEY` to your own YouTube Data API v3 key.
-- **CHOOSE OVERRIDE PIN:** replace `CHOOSE_4_DIGITS` with your own four-digit value. The shipped placeholder is intentionally invalid so a known default PIN cannot be used accidentally.
+```text
+ENTER YOUTUBE API KEY:
+CHOOSE OVERRIDE PIN:
+```
 
-Then protect the file and start VDT:
+The API key and PIN are hidden while you enter them. The setup helper requires a non-empty API key, validates that the override PIN is exactly four digits, writes both values to `.env`, and protects the file with `chmod 600`. It does **not** start Docker automatically.
+
+If `.env` already exists, the helper asks before updating the stored API key and PIN instead of silently overwriting them.
+
+Prefer to configure it manually? Copy `.env.example` to `.env`, set `YOUTUBE_API_KEY` and a four-digit `OVERRIDE_PIN`, then run `chmod 600 .env`. The complete [Installation guide](docs/INSTALL.md) includes both methods.
+
+Start VDT:
 
 ```bash
-chmod 600 .env
 docker compose up -d --build
 ```
 
@@ -159,13 +163,13 @@ See [Updating](docs/UPDATING.md).
 
 ## Optional playback environments
 
-VDT itself only opens a normal YouTube watch URL. The amount of stimulation you see **after** that handoff depends on the playback environment selected on your device.
+VDT itself only opens a normal YouTube watch URL. The amount of stimulation you see **after** that handoff depends on the playback environment selected on your device. 
 
-The optional [Playback Options](docs/PLAYBACK-OPTIONS.md) guide discusses ReVanced, Firefox Android with Unhook/uBlock Origin/SponsorBlock, PipePipe, and NewPipe. None is required, bundled, installed, or maintained by VDT.
+It is recommended to use one of the suggested [Playback Options](docs/PLAYBACK-OPTIONS.md) covered in the guide. (currently ReVanced, Firefox with Unhook/uBlock Origin/SponsorBlock/PiP Fix, PipePipe, and NewPipe)
 
 ## Security model
 
-VDT does **not** contain a login system. The four-digit override PIN is a behavioral cooldown override, **not authentication**.
+VDT does **not** contain a login system. 
 
 For that reason:
 
@@ -180,9 +184,9 @@ See [SECURITY.md](SECURITY.md).
 
 This project uses YouTube API Services, and YouTube's API terms/policies can change independently of VDT. The project includes privacy/terms/data controls and best-effort refresh of stored public API metadata before 30 days, but **the project does not claim legal advice, policy certification, or YouTube approval**.
 
-There are deliberate product choices that deserve independent policy review for public/large-scale use, including selection controls, local derived activity stats, branding placement, and the optional title-normalization setting. See [COMPLIANCE.md](COMPLIANCE.md) before publishing a modified build or operating VDT beyond personal self-hosting.
+See [COMPLIANCE.md](COMPLIANCE.md) before publishing a modified build or operating VDT beyond personal self-hosting.
 
-## Documentation
+## Documentation & Guides
 
 | Guide | Purpose |
 |---|---|

@@ -29,7 +29,37 @@ Do not use a browser HTTP-referrer restriction for a server-side key unless your
 
 ## Put the key in VDT
 
-Copy the example environment file if you have not already:
+### Recommended — guided SSH setup
+
+From the VDT project directory, run:
+
+```bash
+bash setup.sh
+```
+
+When prompted, paste/type your key at:
+
+```text
+ENTER YOUTUBE API KEY:
+```
+
+Then choose your required four-digit cooldown override PIN at:
+
+```text
+CHOOSE OVERRIDE PIN:
+```
+
+The values are hidden while you enter them. `setup.sh` writes them to `.env`, validates the four-digit PIN, protects `.env` with mode `600`, and does not print the credentials back to the terminal. If `.env` already exists, the helper asks before changing the stored values.
+
+The helper does not start VDT automatically. After configuration:
+
+```bash
+docker compose up -d --build
+```
+
+### Manual alternative
+
+If you prefer to manage `.env` yourself:
 
 ```bash
 cp .env.example .env
@@ -39,11 +69,6 @@ Set:
 
 ```text
 YOUTUBE_API_KEY=your_real_key_here
-```
-
-Also set the required four-digit cooldown override PIN:
-
-```text
 OVERRIDE_PIN=your_four_digits
 ```
 

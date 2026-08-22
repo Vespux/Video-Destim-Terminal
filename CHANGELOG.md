@@ -42,6 +42,7 @@ This is the first public GitHub release of Video Destim Terminal.
 
 ### Public documentation
 
+- Added `setup.sh` as the recommended guided SSH configuration path for entering the YouTube API key and four-digit override PIN without opening `.env` in an editor; manual `.env` setup remains available.
 - Separate existing-Docker and blank-Ubuntu install paths.
 - YouTube API key setup/restriction guide.
 - Tailscale Serve/networking guide.
