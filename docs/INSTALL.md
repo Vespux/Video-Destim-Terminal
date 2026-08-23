@@ -44,7 +44,13 @@ sudo chmod a+r /etc/apt/keyrings/docker.asc
 ### 3. Add Docker's Ubuntu repository
 
 ```bash
-. /etc/os-release && printf 'Types: deb\nURIs: https://download.docker.com/linux/ubuntu\nSuites: %s\nComponents: stable\nArchitectures: %s\nSigned-By: /etc/apt/keyrings/docker.asc\n' "${UBUNTU_CODENAME:-$VERSION_CODENAME}" "$(dpkg --print-architecture)" | sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null
+. /etc/os-release && printf 'Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: %s
+Components: stable
+Architectures: %s
+Signed-By: /etc/apt/keyrings/docker.asc
+' "${UBUNTU_CODENAME:-$VERSION_CODENAME}" "$(dpkg --print-architecture)" | sudo tee /etc/apt/sources.list.d/docker.sources >/dev/null
 ```
 
 ### 4. Install Docker Engine + Compose
@@ -99,61 +105,33 @@ cd video-destim-terminal-v1.30
 
 Release ZIP installs are intentionally versioned by folder so an old release can remain available for rollback.
 
-## Configure the YouTube API key and override PIN
+## Configure VDT
 
-### Recommended — guided SSH setup
-
-Run:
+The recommended no-editor setup is:
 
 ```bash
 bash setup.sh
 ```
 
-The helper prompts for:
+Enter your YouTube Data API key and choose a four-digit override PIN when prompted. The helper stores them in `.env` using hidden terminal input and does not start Docker automatically.
 
-```text
-ENTER YOUTUBE API KEY:
-CHOOSE OVERRIDE PIN:
-```
-
-Both values are hidden while you enter them. The helper:
-
-- requires a non-empty YouTube API key;
-- rejects API-key input containing whitespace;
-- requires the override PIN to be exactly four digits;
-- writes the values to `.env` without printing them back to the terminal;
-- preserves the other settings already present in `.env`;
-- applies `chmod 600 .env`;
-- does **not** start Docker automatically.
-
-If `.env` already exists, `setup.sh` asks before updating the stored API key and PIN. Choosing No leaves the file unchanged.
-
-The override PIN only bypasses VDT's request cooldown. It is not login/authentication.
+If you still need to create/restrict an API key—or want the full setup-helper, security, and quota explanation—see [YouTube API Setup](YOUTUBE-API-SETUP.md).
 
 ### Manual alternative
 
-If you prefer to edit the environment file yourself:
+If you prefer to manage `.env` yourself:
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` in your preferred editor and set both required values:
-
-```text
-YOUTUBE_API_KEY=<your own YouTube Data API v3 key>
-OVERRIDE_PIN=<your own four-digit PIN>
-```
-
-**CHOOSE OVERRIDE PIN:** do not leave the placeholder from `.env.example` unchanged.
-
-Then protect the environment file:
+Set your own `YOUTUBE_API_KEY` and four-digit `OVERRIDE_PIN`, then protect the file:
 
 ```bash
 chmod 600 .env
 ```
 
-See [YouTube API Setup](YOUTUBE-API-SETUP.md) for key creation/restriction guidance.
+Do not leave the intentionally invalid `CHOOSE_4_DIGITS` placeholder from `.env.example` unchanged.
 
 ## Start VDT
 
@@ -181,38 +159,19 @@ Expected result for this release:
 {"appVersion":"v1.30","ok":true,"youtubeConfigured":true}
 ```
 
-If `youtubeConfigured` is false, rerun `bash setup.sh` or re-check `.env`. If the container exits, verify `OVERRIDE_PIN` is exactly four digits.
+If the health check is wrong or the container exits, see [Troubleshooting](TROUBLESHOOTING.md).
 
 ## Secure access from another device
 
-The default Compose file binds to:
+VDT binds to `127.0.0.1:8790` by default because it does not have a login system. Keep that safe default unless you intentionally configure another access layer.
 
-```text
-127.0.0.1:8790
-```
-
-That means VDT is not directly reachable from other machines. This is intentional because VDT has no login system.
-
-For phone/remote access, see [Networking & HTTPS](NETWORKING.md). The guide includes:
-
-- Tailscale already installed;
-- blank-Ubuntu Tailscale installation;
-- Tailscale Serve;
-- authenticated HTTPS reverse-proxy guidance;
-- temporary private-LAN testing.
+For Tailscale Serve, authenticated HTTPS reverse proxies, localhost-only use, or temporary private-LAN testing, follow [Networking & HTTPS](NETWORKING.md).
 
 ## First launch
 
-The first browser/device that opens VDT sees a legal/privacy acknowledgement before the main interface.
+The first browser/device that opens VDT sees a legal/privacy acknowledgement. After accepting, review `CONFIG`, add at least one creator under `AVAILABLE CREATORS`, and return home to `REQUEST A WATCH`.
 
-After accepting:
-
-1. Open `CONFIG`.
-2. Review the defaults.
-3. Open `AVAILABLE CREATORS`.
-4. Add a creator using a supported YouTube `@handle`, `/channel/`, or legacy `/user/` URL.
-5. Return home.
-6. Choose `REQUEST A WATCH`.
+See [Configuration](CONFIGURATION.md) for the settings reference and [Terminal Commands](COMMANDS.md) for navigation/utility commands.
 
 ## Normal container controls
 
@@ -244,8 +203,9 @@ Your persistent VDT data remains under `./data/` unless you explicitly delete it
 
 ## Next steps
 
+- [YouTube API Setup & Quota](YOUTUBE-API-SETUP.md)
 - [Configuration](CONFIGURATION.md)
 - [Networking & HTTPS](NETWORKING.md)
 - [Backup & Restore](BACKUP-RESTORE.md)
-- [Terminal Commands](COMMANDS.md)
+- [Updating](UPDATING.md)
 - [Troubleshooting](TROUBLESHOOTING.md)

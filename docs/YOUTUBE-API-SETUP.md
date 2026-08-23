@@ -25,7 +25,7 @@ VDT makes YouTube API calls from the **server**, not from browser JavaScript.
 
 If your server has a stable public egress IP and Google Cloud offers an appropriate IP-address application restriction for your setup, you can consider restricting the key to that IP as an additional safeguard.
 
-Do not use a browser HTTP-referrer restriction for a server-side key unless your deployment specifically routes the API call in a way that supports it; an incorrect restriction will simply make VDT's server-side requests fail.
+Do not use a browser HTTP-referrer restriction for a server-side key unless your deployment specifically supports it; an incompatible restriction will make VDT's server-side requests fail.
 
 ## Put the key in VDT
 
@@ -37,21 +37,26 @@ From the VDT project directory, run:
 bash setup.sh
 ```
 
-When prompted, paste/type your key at:
+The helper prompts for:
 
 ```text
 ENTER YOUTUBE API KEY:
-```
-
-Then choose your required four-digit cooldown override PIN at:
-
-```text
 CHOOSE OVERRIDE PIN:
 ```
 
-The values are hidden while you enter them. `setup.sh` writes them to `.env`, validates the four-digit PIN, protects `.env` with mode `600`, and does not print the credentials back to the terminal. If `.env` already exists, the helper asks before changing the stored values.
+Both values are hidden while you enter them. The helper:
 
-The helper does not start VDT automatically. After configuration:
+- requires a non-empty API key and rejects whitespace in it;
+- requires the override PIN to be exactly four digits;
+- writes both values to `.env` without echoing them back;
+- preserves the other `.env` settings;
+- applies `chmod 600 .env`;
+- asks before changing credentials if `.env` already exists;
+- does **not** start Docker automatically.
+
+The override PIN only bypasses VDT's request cooldown. It is not login/authentication.
+
+After configuration:
 
 ```bash
 docker compose up -d --build
@@ -93,15 +98,36 @@ You want:
 
 `youtubeConfigured:true` only means a non-empty key was loaded. The first real creator/API request is the practical verification that the credential, API enablement, restrictions, and quota all work together.
 
-## How VDT uses quota
+## YouTube API Quota & Usage
 
-For normal creator refreshes, VDT resolves channel data, reads the creator's uploads playlist, and requests video metadata in batches. It does not use YouTube search for ordinary creator browsing.
+Video Destim Terminal uses the YouTube Data API to retrieve creator and video information. Google applies daily quota limits to YouTube Data API projects, but normal VDT usage is unlikely to come close to the default allowance.
 
-The default video-list cache is 15 minutes (`CACHE_TTL_SECONDS=900`) to avoid unnecessary repeated API requests.
+At the time of writing, Google provides a default quota of **10,000 units per day** combined for the API methods used by VDT. VDT does **not** use the separately limited `search.list` endpoint.
 
-VDT also performs best-effort refresh of stored public YouTube API resource metadata before it reaches 30 days old. Those refreshes are batched where possible.
+VDT primarily uses:
 
-YouTube/Google can change quota, credential, and policy behavior. Do not rely on old screenshots or a fixed quota assumption; use the current official documentation for your project.
+- `channels.list` — 1 quota unit
+- `playlistItems.list` — 1 quota unit
+- `videos.list` — 1 quota unit
+
+A typical fresh refresh of one creator therefore uses about **2 quota units**: one request to retrieve videos from the creator's uploads playlist and one request to retrieve the associated video information.
+
+When additional pages must be checked—for example, when filtering short videos, live streams, or other excluded results—VDT can make additional requests. VDT currently checks a maximum of four uploads-playlist pages, making approximately **8 units** the upper end of a normal creator refresh.
+
+Adding a new creator generally requires one additional `channels.list` request.
+
+VDT also caches creator video lists for 15 minutes by default (`CACHE_TTL_SECONDS=900`), so repeatedly opening the same creator during that window does not normally make additional YouTube API requests. Separate best-effort metadata-refresh housekeeping is batched where possible.
+
+For perspective, a 10,000-unit daily quota would allow roughly **5,000 typical two-unit creator refreshes** in a day, or roughly **1,250 four-page/eight-unit refreshes**. Even unusually heavy personal use *should* therefore remain well below the default limit.
+
+API quota is a usage limit, **not a pay-as-you-go billing meter**. Reaching the applicable quota does not automatically purchase or begin billing for additional YouTube Data API requests. Requests instead begin failing after the quota is exhausted until the quota resets or additional quota is approved.
+
+Daily quota resets occur at **midnight Pacific Time**.
+
+Google can change quota allocations, buckets, or API costs. Check the current official quota documentation and your project's Google Cloud quota page rather than relying indefinitely on the numbers above:
+
+- Quota calculator/costs: https://developers.google.com/youtube/v3/determine_quota_cost
+- Google Cloud Console: **APIs & Services → YouTube Data API v3 → Quotas & System Limits**
 
 ## Keep the key private
 
@@ -113,3 +139,5 @@ Never commit or paste publicly:
 - screenshots of the Google Cloud credentials page with the key visible.
 
 VDT's `export-data` output intentionally does not include the API key.
+
+For broader private-file and network guidance, see [SECURITY.md](../SECURITY.md).

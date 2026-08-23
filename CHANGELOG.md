@@ -42,6 +42,8 @@ This is the first public GitHub release of Video Destim Terminal.
 
 ### Public documentation
 
+- Documentation reorganized around authoritative topic guides so README/FAQ/troubleshooting provide concise orientation and link to the canonical procedure instead of repeating it in full.
+- Added detailed YouTube Data API quota guidance, including VDT endpoint costs, caching, practical usage examples, reset timing, and the fact that quota exhaustion does not automatically trigger pay-as-you-go billing.
 - Added `setup.sh` as the recommended guided SSH configuration path for entering the YouTube API key and four-digit override PIN without opening `.env` in an editor; manual `.env` setup remains available.
 - Separate existing-Docker and blank-Ubuntu install paths.
 - YouTube API key setup/restriction guide.

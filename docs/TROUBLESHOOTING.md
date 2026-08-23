@@ -64,20 +64,7 @@ Run `bash setup.sh` to enter a valid PIN, or check `.env` and logs manually. The
 
 ## Permission denied when running Docker
 
-If Docker was just installed and your user was added to the `docker` group, log out and back in. Then:
-
-```bash
-docker --version
-docker compose version
-```
-
-If the user is not in the group:
-
-```bash
-sudo usermod -aG docker "$USER"
-```
-
-Then log out/in again.
+If Docker was just installed and your user was added to the `docker` group, log out and back in before retrying. If the group was never added, follow the Docker-user step in [Installation](INSTALL.md#5-allow-your-normal-user-to-run-docker).
 
 ## Port 8790 is already in use
 
@@ -100,6 +87,12 @@ Check:
 - Any application restriction is compatible with server-side requests from your host.
 - The link is a supported `@handle`, `/channel/`, or legacy `/user/` URL.
 - Container logs for the upstream API error.
+
+## YouTube API reports quota exceeded
+
+VDT does not automatically buy additional API quota. If Google reports that the applicable quota is exhausted, API-backed creator refreshes can fail until the quota resets or the project receives additional quota.
+
+See [YouTube API Quota & Usage](YOUTUBE-API-SETUP.md#youtube-api-quota--usage) for VDT's endpoint costs, expected normal usage, reset timing, and where to inspect your project quota.
 
 ## Creator list seems stale
 
@@ -132,20 +125,7 @@ The PIN is not a login credential.
 
 ## Remote/Tailscale URL does not work, but local health does
 
-Check:
-
-```bash
-tailscale status
-tailscale serve status
-```
-
-If local `curl` succeeds, VDT itself is listening. Focus troubleshooting on Tailscale/reverse-proxy/DNS/access-control configuration.
-
-For Tailscale Serve using the default port:
-
-```bash
-sudo tailscale serve --bg 8790
-```
+If the local health check succeeds, VDT itself is listening. Check `tailscale status` / `tailscale serve status` or your reverse-proxy/access-control layer, then follow [Networking & HTTPS](NETWORKING.md) for the authoritative access setup.
 
 ## Browser still shows an old favicon/UI after updating
 

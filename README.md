@@ -4,7 +4,7 @@
 
 VDT is a tool that allows users a more intentional way of selecting videos to watch. It also has the option of self-imposed video consumption limits by implementing Watch Credits and Cooldowns, which can be configured in a variety of ways. These can also be disabled if you only are only here for the terminal interface.
 
-If you feel it's time we ditch the endless scrolling, attention-economy based, engagement-based & algorithmicly fed slop and slow down a bit, VDT is probably for you. 
+If you feel it's time we ditch the endless scrolling, attention-economy based, engagement-based & algorithmicly fed slop and slow down a bit, VDT is probably for you.
 
 You choose which creators are available, VDT shows a compact text-first list of eligible recent uploads, and a confirmed request opens the normal YouTube watch URL in whatever browser/player you use. (We certainly have some recommendations for this that align with the goal of VDT!)
 
@@ -37,7 +37,7 @@ VDT is intentionally narrow in scope, while offering intuitive controls across d
 - text over thumbnails/cards;
 - a small creator list over broad browsing;
 - visible, reversible local controls;
-- self-hosting so *your* data stays with you
+- self-hosting so *your* data stays with you.
 
 ## Self-hosted by design
 
@@ -45,9 +45,9 @@ There is no VDT cloud account and no central VDT database. Each installation run
 
 Your instance stores its configuration, creator list, credit state, request history, watched state, cached public metadata, and stats in a local SQLite database under `data/`. Your `.env` file contains the YouTube API key and override PIN. Those files are not shared.
 
-(IMPORTANT: Please ensure YOU do NOT share your YouTube API key once it is created.)
+**Do not share or publish your YouTube API key, `.env`, database, exports, or backups.**
 
-## Requirements 
+## Requirements
 
 - A Linux machine capable of running Docker Engine and Docker Compose.
 - A YouTube Data API v3 key created by the person operating the instance.
@@ -63,20 +63,9 @@ Download/clone the project, enter its directory, then run the guided setup:
 bash setup.sh
 ```
 
-VDT will prompt you for:
+VDT prompts for your YouTube API key and a four-digit override PIN, writes them to `.env`, and protects that file. Manual `.env` setup remains available if you prefer it.
 
-```text
-ENTER YOUTUBE API KEY:
-CHOOSE OVERRIDE PIN:
-```
-
-The API key and PIN are hidden while you enter them. The setup helper requires a non-empty API key, validates that the override PIN is exactly four digits, writes both values to `.env`, and protects the file with `chmod 600`. It does **not** start Docker automatically.
-
-If `.env` already exists, the helper asks before updating the stored API key and PIN instead of silently overwriting them.
-
-Prefer to configure it manually? Copy `.env.example` to `.env`, set `YOUTUBE_API_KEY` and a four-digit `OVERRIDE_PIN`, then run `chmod 600 .env`. The complete [Installation guide](docs/INSTALL.md) includes both methods.
-
-Start VDT:
+Then start VDT:
 
 ```bash
 docker compose up -d --build
@@ -94,21 +83,18 @@ Expected result:
 {"appVersion":"v1.30","ok":true,"youtubeConfigured":true}
 ```
 
-The default Compose configuration binds VDT to `127.0.0.1:8790`. That is intentional. See [Networking & HTTPS](docs/NETWORKING.md) before using it from another device.
-
-Starting from blank Ubuntu? Use the complete [Installation guide](docs/INSTALL.md).
+The default Compose configuration binds VDT to `127.0.0.1:8790`. That is intentional. See the complete [Installation guide](docs/INSTALL.md) and [Networking & HTTPS](docs/NETWORKING.md) guide before using VDT from another device.
 
 ## First use
 
 On the first browser/device launch, VDT shows a legal/privacy acknowledgement. After accepting:
 
-1. Open `CONFIG`.
-2. Review the credit/cooldown defaults.
-3. Open `AVAILABLE CREATORS` and add one or more YouTube creators.
-4. Return home and choose `REQUEST A WATCH`.
-5. Select a creator, then an eligible video, then confirm the request.
+1. Open `CONFIG` and review the defaults.
+2. Open `AVAILABLE CREATORS` and add one or more YouTube creators.
+3. Return home and choose `REQUEST A WATCH`.
+4. Select a creator, then an eligible video, then confirm the request.
 
-VDT returns you to the creator's video list and hands the confirmed URL to your device for playback.
+VDT hands the confirmed URL to your device for playback. See [Configuration](docs/CONFIGURATION.md) for the complete settings reference.
 
 ## Home screen and commands
 
@@ -150,35 +136,29 @@ See [Terminal Commands](docs/COMMANDS.md) for details.
 
 See [Configuration](docs/CONFIGURATION.md) for the full behavior, including unsaved-change protection and creator reordering.
 
+## YouTube API quota
+
+VDT uses low-cost YouTube Data API methods and does **not** use the separately limited `search.list` endpoint. A typical fresh creator refresh costs about **2 quota units**, while the current bounded four-page scan can use up to about **8 units**. Google currently provides a default **10,000-unit daily bucket** for the API methods VDT uses, so normal personal use is unlikely to approach the limit.
+
+Quota is a usage limit, **not a pay-as-you-go meter**: exhausting the applicable quota does not automatically begin billing for extra VDT requests. See [YouTube API Setup — Quota & Usage](docs/YOUTUBE-API-SETUP.md#youtube-api-quota--usage) for the full explanation, current endpoint costs, caching behavior, reset timing, and where to check your own usage.
+
 ## Updating
 
-The update guide includes both formats requested for public use:
-
-1. a **single copy/paste command chain** for normal SSH/terminal use; and
-2. the **same process one command at a time** for mobile or limited SSH clients.
-
-Both preserve `.env` and `data/`, stop the old container before copying live SQLite data, leave the previous release folder intact for rollback, rebuild the new release, and finish with a health check.
+VDT's update guide provides both a single copy/paste command chain and the same process one command at a time for mobile/limited SSH clients. The documented release-ZIP workflow preserves `.env` and `data/`, keeps the previous release available for rollback, and finishes with a health check.
 
 See [Updating](docs/UPDATING.md).
 
 ## Optional playback environments
 
-VDT itself only opens a normal YouTube watch URL. The amount of stimulation you see **after** that handoff depends on the playback environment selected on your device. 
+VDT only opens a normal YouTube watch URL. What you see after that handoff depends on the browser/player on your device.
 
-It is recommended to use one of the suggested [Playback Options](docs/PLAYBACK-OPTIONS.md) covered in the guide. (currently ReVanced, Firefox with Unhook/uBlock Origin/SponsorBlock/PiP Fix, PipePipe, and NewPipe)
+See [Playback Options](docs/PLAYBACK-OPTIONS.md) for optional environments that better align with VDT's low-stimulation goal, including ReVanced, Firefox with selected extensions, PipePipe, and NewPipe.
 
 ## Security model
 
-VDT does **not** contain a login system. 
+VDT does **not** contain a login system, and the override PIN is not authentication. The service therefore binds to localhost by default and should not be exposed directly to the public internet.
 
-For that reason:
-
-- the service binds to localhost by default;
-- you should not directly expose port `8790` to the public internet;
-- remote access should use a private network/VPN such as Tailscale Serve or a reverse proxy with real authentication/access control;
-- `.env`, the SQLite database, exports, and backups should be treated as private files.
-
-See [SECURITY.md](SECURITY.md).
+For private remote access and the full threat model, see [Networking & HTTPS](docs/NETWORKING.md) and [SECURITY.md](SECURITY.md).
 
 ## YouTube API / policy note
 
@@ -191,7 +171,7 @@ See [COMPLIANCE.md](COMPLIANCE.md) before publishing a modified build or operati
 | Guide | Purpose |
 |---|---|
 | [Installation](docs/INSTALL.md) | Existing-Docker and blank-Ubuntu setup paths |
-| [YouTube API setup](docs/YOUTUBE-API-SETUP.md) | Create/restrict your own API key |
+| [YouTube API setup](docs/YOUTUBE-API-SETUP.md) | Create/restrict your API key and understand quota usage |
 | [Networking & HTTPS](docs/NETWORKING.md) | Localhost, Tailscale Serve, reverse proxies |
 | [Configuration](docs/CONFIGURATION.md) | Every VDT setting and save behavior |
 | [Terminal Commands](docs/COMMANDS.md) | Main navigation and utility commands |
@@ -206,12 +186,11 @@ See [COMPLIANCE.md](COMPLIANCE.md) before publishing a modified build or operati
 
 ## Privacy and data controls
 
-The running application provides an always-available `LEGAL` screen and first-run acknowledgement. Packaged notices are also served at:
-
-- `/privacy`
-- `/terms`
+The running application provides an always-available `LEGAL` screen and first-run acknowledgement. Packaged notices are also served at `/privacy` and `/terms`.
 
 `export-data` creates a local JSON export without the API key or override PIN. `delete-data` permanently resets the local VDT database after confirmation; it does not delete data held by YouTube or third-party playback apps.
+
+See [PRIVACY.md](PRIVACY.md) for the full data-handling notice.
 
 ## Support
 

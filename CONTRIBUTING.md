@@ -54,6 +54,7 @@ If Node.js is available, also syntax-check the inline JavaScript after extractin
 - When an SSH workflow is lengthy, provide both an all-at-once block and one-command-at-a-time alternative where useful.
 - Do not include private example IPs, hostnames, API keys, or personal paths in public docs.
 - Link to authoritative upstream documentation for Docker, Tailscale, and YouTube API policy rather than freezing unnecessary third-party details in this repository.
+- Give each topic one authoritative VDT guide. Elsewhere, repeat only the conclusion/context a reader needs and link to the canonical procedure instead of copying the full instructions.
 
 ## UI style
 

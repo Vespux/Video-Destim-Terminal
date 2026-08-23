@@ -6,23 +6,15 @@ The current public release line begins at **v1.30**.
 
 ## Important: there is no login system
 
-VDT is designed primarily as a personal self-hosted application.
+VDT is designed primarily as a personal self-hosted application. The four-digit `OVERRIDE_PIN` only bypasses a configured request cooldown; it is **not authentication**.
 
-The four-digit `OVERRIDE_PIN` only bypasses a configured request cooldown. It is **not authentication** and does not protect the application from other people who can reach it.
+Anyone who can reach an unprotected VDT interface should therefore be treated as able to operate that instance. The public Compose file binds to `127.0.0.1` by default for this reason.
 
-The public Compose file therefore binds to `127.0.0.1` by default.
-
-Recommended access patterns:
-
-- localhost only;
-- Tailscale Serve/private VPN with HTTPS and appropriate tailnet access rules;
-- an HTTPS reverse proxy that also provides real authentication/access control.
-
-Do not expose port `8790` directly to the public internet.
+Do not expose port `8790` directly to the public internet. Follow [Networking & HTTPS](docs/NETWORKING.md) for localhost, Tailscale Serve/private-VPN, reverse-proxy, and private-LAN access patterns.
 
 ## What someone with web access can do
 
-Because there is no account/permission layer, anyone who can reach the unprotected interface can potentially:
+Because there is no account/permission layer, someone who can reach the interface can potentially:
 
 - view creators/config/local request history/stats;
 - change settings/creator lists;
@@ -45,13 +37,7 @@ Never commit or publish:
 
 `.gitignore` reduces accidental commits, but you should still inspect `git status` before every push.
 
-The recommended `bash setup.sh` helper collects the YouTube API key and override PIN through hidden terminal input, writes them to `.env` without printing them back to the terminal, and applies restrictive file permissions. This reduces accidental exposure during setup, but the resulting `.env` file still contains the real credentials and must be treated as private.
-
-Recommended local permission for `.env`:
-
-```bash
-chmod 600 .env
-```
+The recommended `bash setup.sh` helper uses hidden terminal input and writes the API key/PIN to `.env` without echoing them back. It applies `chmod 600`, but `.env` still contains the real credentials and must remain private.
 
 ## Browser/server security headers
 
@@ -65,9 +51,7 @@ VDT is built from a Python Alpine base image and installs Flask, Requests, and G
 
 ## Backups
 
-Backups of `.env` and `data/` contain sensitive local configuration/history. Store them with permissions appropriate for private data.
-
-See [docs/BACKUP-RESTORE.md](docs/BACKUP-RESTORE.md).
+Backups of `.env` and `data/` contain sensitive local configuration/history. See [Backup & Restore](docs/BACKUP-RESTORE.md) for the authoritative backup procedure.
 
 ## Reporting a vulnerability
 

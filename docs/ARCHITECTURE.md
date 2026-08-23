@@ -68,13 +68,7 @@ The database is local to each instance.
 
 ## Browser-side storage
 
-VDT uses browser storage for small interface state, including:
-
-- first-run legal acknowledgement;
-- return-screen state used when handing playback off to another app/site;
-- legacy migration input for older pre-database builds if present.
-
-The authoritative current instance state is the server-side SQLite database.
+Browser storage is limited to small interface/migration state; the authoritative current instance state is the server-side SQLite database. See [PRIVACY.md](../PRIVACY.md) for the complete browser-storage disclosure.
 
 ## YouTube API request pattern
 
@@ -85,7 +79,7 @@ VDT uses:
 - `playlistItems` to enumerate recent uploads;
 - batched `videos` metadata requests.
 
-The creator list is cached for a short configurable TTL. Stored resource metadata used by local history/creator records is refreshed on a best-effort schedule before 30 days.
+Creator video lists use a short configurable cache, and stored API metadata has separate best-effort refresh housekeeping. See [YouTube API Setup](YOUTUBE-API-SETUP.md#youtube-api-quota--usage) for quota/caching details and [COMPLIANCE.md](../COMPLIANCE.md) for the metadata-retention policy notes.
 
 ## Video eligibility
 
@@ -105,20 +99,10 @@ When the user confirms a video:
 
 No audiovisual content passes through the VDT backend.
 
-## External network destinations in the unmodified build
+## External network destinations
 
-Normal operation can contact:
-
-- `www.googleapis.com` — YouTube Data API v3, from the server;
-- `fonts.googleapis.com` / `fonts.gstatic.com` — VT323 web font, from the browser;
-- `youtube.com` — after a user confirms a watch request or opens YouTube legal links;
-- `policies.google.com` — only if the user opens the Google Privacy Policy link;
-- `ko-fi.com` — only after the user chooses SUPPORT and confirms opening the tip jar.
-
-Optional playback tools and Tailscale have their own independent network behavior.
+The architecture makes server-side YouTube API requests and browser-side requests/navigation for the terminal font, confirmed YouTube handoff, legal links, and optional SUPPORT action. The complete destination-by-destination disclosure lives in [PRIVACY.md](../PRIVACY.md#network-requests-made-by-the-unmodified-interface).
 
 ## Security boundaries
 
-VDT assumes the person who can reach the web interface is trusted to operate the instance. There is no per-user login, CSRF token system, or multi-user permissions model.
-
-That is why the default network binding is localhost and the documentation recommends private-network or authenticated-proxy access rather than public exposure.
+VDT assumes the person who can reach the web interface is trusted to operate the instance; there is no per-user login or permissions model. See [SECURITY.md](../SECURITY.md) for the threat model and [Networking & HTTPS](NETWORKING.md) for access procedures.
