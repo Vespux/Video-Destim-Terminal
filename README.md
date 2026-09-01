@@ -183,7 +183,6 @@ See [COMPLIANCE.md](COMPLIANCE.md) before publishing a modified build or operati
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Health, logs, API, networking, cache issues |
 | [Architecture](docs/ARCHITECTURE.md) | Data flow, components, storage, network calls |
 | [FAQ](docs/FAQ.md) | Common behavior/self-hosting questions |
-| [GitHub Publishing](docs/MAINTAINER-GITHUB-WORKFLOW.md) | Maintainer first-release/future-release workflow |
 | [API & Distribution Notes](COMPLIANCE.md) | Current YouTube API policy review points |
 
 ## Privacy and data controls

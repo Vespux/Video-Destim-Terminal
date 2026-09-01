@@ -1,0 +1,34 @@
+name: Bug report
+description: Report a reproducible Video Destim Terminal problem
+title: "[BUG] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not paste API keys, .env contents, database files, or private hostnames."
+  - type: input
+    id: version
+    attributes:
+      label: Video Destim Terminal version
+      placeholder: v1.30
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include the steps needed to reproduce the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant sanitized logs
+      description: Remove secrets/private addresses before posting.
+      render: shell

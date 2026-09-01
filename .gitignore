@@ -1,0 +1,24 @@
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+
+# Persistent/local application data
+data/*
+!data/.gitkeep
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+
+# User exports / local backups
+video-destim-terminal-export-*.json
+backup/
+backups/
+
+# Release archives and local build/runtime debris
+*.zip
+__pycache__/
+*.py[cod]
+.DS_Store
+Thumbs.db

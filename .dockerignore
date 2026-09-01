@@ -1,0 +1,10 @@
+.git
+.github
+.env
+data
+*.db
+*.db-*
+*.zip
+__pycache__
+*.pyc
+docs
