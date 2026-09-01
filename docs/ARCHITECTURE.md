@@ -49,7 +49,7 @@ The public default therefore exposes only `127.0.0.1:8790` on the Docker host.
 
 The YouTube API key is consumed by Python `requests` calls in `app.py`; it is not intentionally placed in browser state or VDT JSON exports.
 
-The override PIN is compared by the backend for cooldown overrides. It is not authentication.
+The override PIN is compared by the backend for cooldown overrides. It is not authentication or a login system.
 
 ## Local database
 
@@ -85,7 +85,7 @@ Creator video lists use a short configurable cache, and stored API metadata has 
 
 The backend excludes items at or below 180 seconds and items identified as current/upcoming/live-origin content, then returns up to 20 eligible videos.
 
-The browser can sort that eligible set by upload date, name, or length.
+These eligible results can be sorted by upload date, name, or length.
 
 ## Confirmed watch request
 

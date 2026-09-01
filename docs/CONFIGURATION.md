@@ -108,15 +108,13 @@ When `NO`, the Request Cooldown setting is displayed as `N/A` and consecutive re
 
 Sets cooldown hours/minutes used when Block Consecutive Watches is enabled.
 
-During a cooldown, `REQUEST A WATCH` shows `REQUESTS LOCKED` and offers `MANUAL OVERRIDE`.
+During a cooldown, `REQUEST A WATCH` shows `REQUESTS LOCKED` and offers `MANUAL OVERRIDE`. 
 
 ## Manual override
 
 The four-digit PIN comes from `.env`.
 
 A successful override only authorizes the next request. After that request, the normal cooldown behavior resumes.
-
-The override PIN is **not authentication** and should never be used as a substitute for network access control.
 
 ## 9. Default Sort for Videos
 

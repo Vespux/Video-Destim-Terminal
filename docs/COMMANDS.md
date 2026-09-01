@@ -62,7 +62,7 @@ Diagnostic output includes:
 - cache information;
 - server time.
 
-It does not intentionally print the API key or override PIN.
+It intentionally does not print the API key or override PIN.
 
 ## `flush-cache`
 
@@ -96,4 +96,4 @@ Removes one current watch credit after confirmation. This is a deliberate mainte
 
 ## Unadvertised easter eggs
 
-The source contains a small number of harmless easter eggs/debug-era curiosities that are intentionally omitted from Command Doc. They are not security controls and should not be treated as secrets in an open-source project.
+The source contains a very small number of harmless easter eggs/debug-era curiosities that are intentionally omitted from Command Doc. 

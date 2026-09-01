@@ -22,7 +22,7 @@ Each independently hosted **instance/operator** should use its own Google Cloud 
 
 ## Will normal VDT use exhaust my YouTube API quota?
 
-Very unlikely. VDT uses low-cost API methods, does not use `search.list`, and caches creator video lists. A typical fresh creator refresh is about 2 quota units against Google's current 10,000-unit daily bucket for the methods VDT uses.
+Very unlikely. VDT uses low-cost API methods, does not use `search.list`, and caches creator video lists. A typical fresh creator refresh is about 2 quota units against Google's current 10,000-unit **daily** bucket for the methods VDT uses.
 
 Reaching the quota does not automatically start billing for extra VDT requests. See [YouTube API Quota & Usage](YOUTUBE-API-SETUP.md#youtube-api-quota--usage) for the full breakdown and current caveats.
 
@@ -70,7 +70,7 @@ Technically, yes, but everyone operates the same database/credit state and there
 
 ## Does VDT send analytics to the project author?
 
-The unmodified release contains no VDT telemetry service and does not send an independently hosted instance database to the author. See [PRIVACY.md](../PRIVACY.md) for the complete network/data disclosure.
+No. The unmodified release contains no VDT telemetry service and does not send an independently hosted instance database to the author. See [PRIVACY.md](../PRIVACY.md) for the complete network/data disclosure.
 
 ## What does SUPPORT do?
 

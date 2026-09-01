@@ -10,8 +10,8 @@ Video Destim Terminal itself does one thing at playback time: it opens a standar
 
 | Playback option | Reduce suggested/next surfaces | SponsorBlock | Ad reduction | YouTube account watch-history sync | Native Android feel | Notes |
 |---|---|---|---|---|---|---|
-| **ReVanced** | Yes, via applicable patches/settings | Yes | Yes, via applicable patches | Typically follows the signed-in YouTube app environment | **Yes** | Flexible native option; patch names/settings can change |
-| **Firefox Android + Unhook + uBlock Origin + SponsorBlock** | **Yes** | **Yes** | **Yes** via uBlock Origin | Typically follows signed-in YouTube web | Partial | Strong browser-based combination; PiP/add-on behavior can vary by browser/device/version |
+| **ReVanced** | Somewhat, via applicable patches/settings | Yes | Yes, via applicable patches | Typically follows the signed-in YouTube app environment | **Yes** | Flexible native option; patch names/settings can change |
+| **Firefox + Unhook + uBlock Origin + SponsorBlock (+PiPFix, if needed on mobile)** | **Yes** | **Yes** | **Yes** via uBlock Origin | Typically follows signed-in YouTube web | Partial | Strong browser-based combination; PiP/add-on behavior can vary by browser/device/version |
 | **PipePipe** | Yes; main-page/player surfaces are configurable | **Yes** | Alternative-client playback; behavior differs from official app | **No — local PipePipe history instead** | **Yes** | Native independent player; YouTube login is not a general history-sync mechanism |
 | **NewPipe** | **Yes**; related/next and main-page content can be reduced | No built-in SponsorBlock in official NewPipe | Project describes an ad-free experience | **No — local NewPipe history instead** | **Yes** | Very clean low-stimulation option if SponsorBlock is not required |
 
