@@ -10,7 +10,7 @@ If you feel it's time we ditch the endless scrolling, attention-economy based, e
 
 You choose which creators are available, VDT shows a compact text-first list of eligible recent uploads, and a confirmed request opens the normal YouTube watch URL in whatever browser/player you use. (We certainly have some recommendations for this that align with the goal of VDT!)
 
-> **Current development release: v1.31 · Initial public GitHub release: v1.30**
+> **Current release: v1.31 · Initial public GitHub release: v1.30**
 >
 > Video Destim Terminal is an independent project. It is not affiliated with, sponsored by, or endorsed by YouTube, Google, ReVanced, Mozilla, NewPipe, PipePipe, SponsorBlock, uBlock Origin, Unhook, or Tailscale.
 

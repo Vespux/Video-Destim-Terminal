@@ -2,6 +2,7 @@
 
 ## v1.31 — Saved Videos
 
+- Watch requests open the video in a new tab while VDT keeps the updated video list open.
 - Added Saved Videos with instant `☆` / `★` save and unsave controls on video lists.
 - Added `[S] SAVED VIDEOS` above the creator list under Request a Watch.
 - Saved videos are aggregated across creators and do not consume credits or affect cooldowns until actually requested.
