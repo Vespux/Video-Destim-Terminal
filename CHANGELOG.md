@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.30.1 — Setup/PWA hotfix
+
+- Fixed `setup.sh` failing on Linux because the v1.30 release artifact contained Windows CRLF line endings.
+- Added `.gitattributes` to force LF line endings for shell scripts.
+- Added an explicit PWA manifest `id` while preserving the existing `/` start URL and scope.
+- Bumped app, health-check, UI, and icon-cache version identifiers to v1.30.1.
+- Updated installation, updating, and troubleshooting documentation.
+- Added guidance for Android/Chrome deployments where multiple installed web apps share one hostname.
 ## v1.30 — Initial public GitHub release
 
 This is the first public GitHub release of Video Destim Terminal.

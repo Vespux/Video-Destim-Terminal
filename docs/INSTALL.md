@@ -99,8 +99,8 @@ cd video-destim-terminal
 Place the release ZIP in your current/home directory, then:
 
 ```bash
-unzip video-destim-terminal-v1.30.zip
-cd video-destim-terminal-v1.30
+unzip video-destim-terminal-v1.30.1.zip
+cd video-destim-terminal-v1.30.1
 ```
 
 Release ZIP installs are intentionally versioned by folder so an old release can remain available for rollback.
@@ -156,7 +156,7 @@ curl http://127.0.0.1:8790/health
 Expected result for this release:
 
 ```json
-{"appVersion":"v1.30","ok":true,"youtubeConfigured":true}
+{"appVersion":"v1.30.1","ok":true,"youtubeConfigured":true}
 ```
 
 If the health check is wrong or the container exits, see [Troubleshooting](TROUBLESHOOTING.md).

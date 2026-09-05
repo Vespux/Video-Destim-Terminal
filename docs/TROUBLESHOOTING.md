@@ -33,7 +33,7 @@ curl http://127.0.0.1:8790/health
 Expected shape:
 
 ```json
-{"appVersion":"v1.30","ok":true,"youtubeConfigured":true}
+{"appVersion":"v1.30.1","ok":true,"youtubeConfigured":true}
 ```
 
 ## `youtubeConfigured` is false
@@ -127,6 +127,11 @@ The PIN is not a login credential.
 
 If the local health check succeeds, VDT itself is listening. Check `tailscale status` / `tailscale serve status` or your reverse-proxy/access-control layer, then follow [Networking & HTTPS](NETWORKING.md) for the authoritative access setup.
 
+## Android opens VDT inside another installed web app
+
+If multiple installed web apps are served from the same hostname on different ports, Android/Chrome can route them unexpectedly. If this occurs, give VDT its own hostname or MagicDNS name instead of relying only on a different port.
+
+VDT declares an explicit PWA app ID, but separate hostnames are the recommended deployment workaround for this case.
 ## Browser still shows an old favicon/UI after updating
 
 VDT sends the main page with no-cache headers and versioned icon URLs, but mobile browsers can still cache favicons aggressively.

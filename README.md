@@ -10,7 +10,7 @@ If you feel it's time we ditch the endless scrolling, attention-economy based, e
 
 You choose which creators are available, VDT shows a compact text-first list of eligible recent uploads, and a confirmed request opens the normal YouTube watch URL in whatever browser/player you use. (We certainly have some recommendations for this that align with the goal of VDT!)
 
-> **Initial public GitHub release: v1.30**
+> **Current release: v1.30.1 · Initial public GitHub release: v1.30**
 >
 > Video Destim Terminal is an independent project. It is not affiliated with, sponsored by, or endorsed by YouTube, Google, ReVanced, Mozilla, NewPipe, PipePipe, SponsorBlock, uBlock Origin, Unhook, or Tailscale.
 
@@ -82,7 +82,7 @@ curl http://127.0.0.1:8790/health
 Expected result:
 
 ```json
-{"appVersion":"v1.30","ok":true,"youtubeConfigured":true}
+{"appVersion":"v1.30.1","ok":true,"youtubeConfigured":true}
 ```
 
 The default Compose configuration binds VDT to `127.0.0.1:8790`. That is intentional. See the complete [Installation guide](docs/INSTALL.md) and [Networking & HTTPS](docs/NETWORKING.md) guide before using VDT from another device.

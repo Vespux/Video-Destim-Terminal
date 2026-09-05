@@ -2,7 +2,7 @@
 
 _Last updated: August 20, 2026_
 
-Video Destim Terminal is self-hosted software. This notice describes the behavior of the unmodified v1.30 distribution. If you modify the software, expose it to additional users, add analytics, or operate it as a service for other people, you are responsible for updating your privacy disclosures accordingly.
+Video Destim Terminal is self-hosted software. This notice describes the behavior of the unmodified v1.30.1 distribution. If you modify the software, expose it to additional users, add analytics, or operate it as a service for other people, you are responsible for updating your privacy disclosures accordingly.
 
 ## YouTube API Services
 

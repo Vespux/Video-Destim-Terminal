@@ -93,7 +93,7 @@ curl http://127.0.0.1:8790/health
 You want:
 
 ```json
-{"appVersion":"v1.30","ok":true,"youtubeConfigured":true}
+{"appVersion":"v1.30.1","ok":true,"youtubeConfigured":true}
 ```
 
 `youtubeConfigured:true` only means a non-empty key was loaded. The first real creator/API request is the practical verification that the credential, API enablement, restrictions, and quota all work together.

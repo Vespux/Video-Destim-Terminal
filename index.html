@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050805">
-<title>Video-Destim-Terminal v1.30</title>
-<link rel="icon" href="/favicon.svg?v=1.30" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1.30">
-<link rel="manifest" href="/manifest.webmanifest?v=1.30">
+<title>Video-Destim-Terminal v1.30.1</title>
+<link rel="icon" href="/favicon.svg?v=1.30.1" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1.30.1">
+<link rel="manifest" href="/manifest.webmanifest?v=1.30.1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
@@ -57,7 +57,7 @@ input[type=number]{max-width:140px}
 .video{margin:12px 0 18px}.video-title{font-variant-emoji:text}.emoji-glyph{display:inline-block;font-variant-emoji:text;font-size:.90em;line-height:1;vertical-align:-.04em;filter:grayscale(1) sepia(1) saturate(5) hue-rotate(68deg) brightness(1.05) contrast(1.05);opacity:.88}.meta{font-size:19px;color:var(--dim);margin-top:3px}.watched{text-decoration:line-through;color:var(--dim)}.cursor:after{content:"_";animation:b 1s step-end infinite}@keyframes b{50%{opacity:0}}
 </style>
 </head>
-<body><main class="screen-frame"><div id="app"><div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30</div><hr><div>INITIALIZING...</div></div></main>
+<body><main class="screen-frame"><div id="app"><div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30.1</div><hr><div>INITIALIZING...</div></div></main>
 <script>
 const KEY="videoDestimTerminalState", OLD_KEY="videoDestimTerminalLegacyV002";
 const LEGAL_ACCEPT_KEY="videoDestimTerminalLegalAccepted-2026-08";
@@ -78,9 +78,9 @@ async function refreshState(){let tz=Intl.DateTimeFormat().resolvedOptions().tim
 function legalAccepted(){try{return localStorage.getItem(LEGAL_ACCEPT_KEY)==="1"}catch(e){return false}}
 function openExternal(url){window.open(url,"_blank","noopener")}
 async function boot(){try{await refreshState();if(st.needsMigration){let raw=localStorage.getItem(KEY)||localStorage.getItem(OLD_KEY);if(raw){try{await api("/api/migrate",{method:"POST",body:JSON.parse(raw)})}catch(e){await api("/api/initialize",{method:"POST"})}}else await api("/api/initialize",{method:"POST"});await refreshState()}if(!legalAccepted())return legalGate();render()}catch(e){fatal(e.message)}}
-function fatal(msg){app.innerHTML=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30</div><hr><div class="err">${esc(msg)}</div><div class="tiny dim">CHECK CONTAINER STATUS / LOGS.</div>`}
+function fatal(msg){app.innerHTML=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30.1</div><hr><div class="err">${esc(msg)}</div><div class="tiny dim">CHECK CONTAINER STATUS / LOGS.</div>`}
 function cooldownMs(){return Math.max(0,(st?.cooldownRemainingMs||0)-(Date.now()-stateFetchedAt))}
-function head(sub=""){let tid="t"+Math.random().toString(36).slice(2);bind(tid,()=>{if(view.name==="configLeave"||view.name==="reorderLeave")return;requestNavigation({name:"home"})});let path="";if(sub){let parts=sub.split(" / ");let p=parts.map((label,i)=>{let current=i===parts.length-1,route=null;if(!current&&label==="CONFIG")route=()=>requestNavigation({name:"config"});if(!current&&label==="STATS")route=()=>requestNavigation({name:"stats",scope:view.scope||"period"});if(!current&&label==="REQUEST A WATCH")route=()=>requestNavigation({name:"creators"});if(!current&&label==="AVAILABLE CREATORS")route=()=>requestNavigation({name:"creatorCfg"});if(!current&&i>0&&parts[0]==="REQUEST A WATCH"&&view.cid&&label!=="SELECT CREATOR")route=()=>requestNavigation({name:"videos",cid:view.cid,sort:view.sort||st.settings.sort});if(route){let id="p"+Math.random().toString(36).slice(2);bind(id,route);return `<button type="button" id="${id}" class="crumb">${esc(label)}</button>`}return `<span class="current">${esc(label)}</span>`}).join(`<span> / </span>`);path=`<div class="path">${p}</div>`}let sid="s"+Math.random().toString(36).slice(2),lid="l"+Math.random().toString(36).slice(2);bind(sid,()=>openSupport());bind(lid,()=>openLegal());return `<button type="button" id="${tid}" class="title nav">VIDEO-DESTIM-TERMINAL</button><div class="dim">v1.30 · <button type="button" id="${sid}" class="header-inline">SUPPORT</button> · <button type="button" id="${lid}" class="header-inline">LEGAL</button></div>${path}<hr>`}
+function head(sub=""){let tid="t"+Math.random().toString(36).slice(2);bind(tid,()=>{if(view.name==="configLeave"||view.name==="reorderLeave")return;requestNavigation({name:"home"})});let path="";if(sub){let parts=sub.split(" / ");let p=parts.map((label,i)=>{let current=i===parts.length-1,route=null;if(!current&&label==="CONFIG")route=()=>requestNavigation({name:"config"});if(!current&&label==="STATS")route=()=>requestNavigation({name:"stats",scope:view.scope||"period"});if(!current&&label==="REQUEST A WATCH")route=()=>requestNavigation({name:"creators"});if(!current&&label==="AVAILABLE CREATORS")route=()=>requestNavigation({name:"creatorCfg"});if(!current&&i>0&&parts[0]==="REQUEST A WATCH"&&view.cid&&label!=="SELECT CREATOR")route=()=>requestNavigation({name:"videos",cid:view.cid,sort:view.sort||st.settings.sort});if(route){let id="p"+Math.random().toString(36).slice(2);bind(id,route);return `<button type="button" id="${id}" class="crumb">${esc(label)}</button>`}return `<span class="current">${esc(label)}</span>`}).join(`<span> / </span>`);path=`<div class="path">${p}</div>`}let sid="s"+Math.random().toString(36).slice(2),lid="l"+Math.random().toString(36).slice(2);bind(sid,()=>openSupport());bind(lid,()=>openLegal());return `<button type="button" id="${tid}" class="title nav">VIDEO-DESTIM-TERMINAL</button><div class="dim">v1.30.1 · <button type="button" id="${sid}" class="header-inline">SUPPORT</button> · <button type="button" id="${lid}" class="header-inline">LEGAL</button></div>${path}<hr>`}
 function item(label,fn,disabled=false,isDefault=false){let id="i"+Math.random().toString(36).slice(2),key=shortcutFromLabel(label);setTimeout(()=>{let e=document.getElementById(id);if(e&&!disabled)e.onclick=fn},0);return `<button type="button" id="${id}" class="item${disabled?" disabled":""}"${key?` data-shortcut="${key}"`:""}${isDefault?' data-default="1"':""}>${label}</button>`}
 function docCommand(command,description,fn){let id="d"+Math.random().toString(36).slice(2);bind(id,fn);return `<div><button type="button" id="${id}" class="doc-command">${esc(command)}</button></div><div class="tiny dim">${esc(description)}</div><div class="space"></div>`}
 function cfg(num,label,value,fn,disabled=false){let id="c"+Math.random().toString(36).slice(2);setTimeout(()=>{let e=document.getElementById(id);if(e&&!disabled)e.onclick=fn},0);return `<button type="button" id="${id}" class="cfg-item${disabled?" disabled":""}" data-shortcut="${num}"><span class="cfg-label">[${num}] ${label}</span><span class="cfg-value-row"><span class="cfg-dots"></span><span class="cfg-value">${value}</span></span></button>`}
@@ -341,7 +341,7 @@ async function stats(){
 
 
 function legalGate(){
-  let h=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30</div><hr><div>BEFORE CONTINUING</div><div class="space"></div><div class="legal-copy"><div>VIDEO DESTIM TERMINAL USES YOUTUBE API SERVICES TO RETRIEVE PUBLIC CHANNEL AND VIDEO METADATA.</div><div>BY CONTINUING, YOU ACKNOWLEDGE THE VIDEO DESTIM TERMINAL PRIVACY NOTICE AND TERMS, AND AGREE TO BE BOUND BY THE YOUTUBE TERMS OF SERVICE.</div></div><hr>`;
+  let h=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30.1</div><hr><div>BEFORE CONTINUING</div><div class="space"></div><div class="legal-copy"><div>VIDEO DESTIM TERMINAL USES YOUTUBE API SERVICES TO RETRIEVE PUBLIC CHANNEL AND VIDEO METADATA.</div><div>BY CONTINUING, YOU ACKNOWLEDGE THE VIDEO DESTIM TERMINAL PRIVACY NOTICE AND TERMS, AND AGREE TO BE BOUND BY THE YOUTUBE TERMS OF SERVICE.</div></div><hr>`;
   h+=item("[1] PRIVACY NOTICE",()=>openExternal("/privacy"));
   h+=item("[2] VIDEO DESTIM TERMINAL TERMS",()=>openExternal("/terms"));
   h+=item("[3] YOUTUBE TERMS OF SERVICE",()=>openExternal("https://www.youtube.com/t/terms"));

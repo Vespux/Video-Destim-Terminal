@@ -12,12 +12,12 @@ See [Backup & Restore](BACKUP-RESTORE.md).
 
 ## Release ZIP — quick all-at-once method
 
-The following is the **tested v1.29 → v1.30 transition** used immediately before the initial public release. Future release documentation should update both version numbers to match the actual old/new release.
+The following is the **v1.30 → v1.30.1 hotfix transition**. Future release documentation should update both version numbers to match the actual old/new release.
 
-If `video-destim-terminal-v1.30.zip` is already in your home directory, this entire command can be pasted in one shot:
+If `video-destim-terminal-v1.30.1.zip` is already in your home directory, this entire command can be pasted in one shot:
 
 ```bash
-cd ~ && unzip -q ~/video-destim-terminal-v1.30.zip -d ~ && cp ~/video-destim-terminal-v1.29/.env ~/video-destim-terminal-v1.30/.env && cd ~/video-destim-terminal-v1.29 && docker compose down && cp -a ~/video-destim-terminal-v1.29/data/. ~/video-destim-terminal-v1.30/data/ && cd ~/video-destim-terminal-v1.30 && docker compose up -d --build && docker compose ps && curl http://127.0.0.1:8790/health
+cd ~ && unzip -q ~/video-destim-terminal-v1.30.1.zip -d ~ && cp ~/video-destim-terminal-v1.30/.env ~/video-destim-terminal-v1.30.1/.env && cd ~/video-destim-terminal-v1.30 && docker compose down && cp -a ~/video-destim-terminal-v1.30/data/. ~/video-destim-terminal-v1.30.1/data/ && cd ~/video-destim-terminal-v1.30.1 && docker compose up -d --build && docker compose ps && curl http://127.0.0.1:8790/health
 ```
 
 Why `&&`? Each dependent step runs only if the preceding step succeeds. If unzip/copy/shutdown/build fails, later steps do not blindly continue.
@@ -31,31 +31,31 @@ Use this form when you want to inspect every step separately or your SSH client 
 ### 1. Unpack the new release
 
 ```bash
-unzip -q ~/video-destim-terminal-v1.30.zip -d ~
+unzip -q ~/video-destim-terminal-v1.30.1.zip -d ~
 ```
 
 ### 2. Copy the existing environment file
 
 ```bash
-cp ~/video-destim-terminal-v1.29/.env ~/video-destim-terminal-v1.30/.env
+cp ~/video-destim-terminal-v1.30/.env ~/video-destim-terminal-v1.30.1/.env
 ```
 
 ### 3. Stop the old release before copying its data
 
 ```bash
-cd ~/video-destim-terminal-v1.29 && docker compose down
+cd ~/video-destim-terminal-v1.30 && docker compose down
 ```
 
 ### 4. Copy local VDT data
 
 ```bash
-cp -a ~/video-destim-terminal-v1.29/data/. ~/video-destim-terminal-v1.30/data/
+cp -a ~/video-destim-terminal-v1.30/data/. ~/video-destim-terminal-v1.30.1/data/
 ```
 
 ### 5. Build/start the new release
 
 ```bash
-cd ~/video-destim-terminal-v1.30 && docker compose up -d --build
+cd ~/video-destim-terminal-v1.30.1 && docker compose up -d --build
 ```
 
 ### 6. Verify the container
@@ -70,10 +70,10 @@ docker compose ps
 curl http://127.0.0.1:8790/health
 ```
 
-For v1.30:
+For v1.30.1:
 
 ```json
-{"appVersion":"v1.30","ok":true,"youtubeConfigured":true}
+{"appVersion":"v1.30.1","ok":true,"youtubeConfigured":true}
 ```
 
 ## Why the previous folder is left intact
@@ -97,13 +97,13 @@ it normally does not need to be reconfigured after a VDT release update.
 Stop the new release:
 
 ```bash
-cd ~/video-destim-terminal-v1.30 && docker compose down
+cd ~/video-destim-terminal-v1.30.1 && docker compose down
 ```
 
 Start the previous release:
 
 ```bash
-cd ~/video-destim-terminal-v1.29 && docker compose up -d --build
+cd ~/video-destim-terminal-v1.30 && docker compose up -d --build
 ```
 
 Verify:

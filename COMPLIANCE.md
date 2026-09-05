@@ -19,7 +19,7 @@ The revision history should be checked before each public release. In 2026, YouT
 
 ## Public-release safeguards / design choices
 
-The v1.30 release:
+The v1.30.1 release:
 
 - Uses the application name **Video Destim Terminal**, not a product name containing `YouTube` or `YT`.
 - Shows `Developed with YouTube API` on the `about` screen.
@@ -40,7 +40,7 @@ These are intentionally documented rather than presented as solved/certified.
 
 Current YouTube Developer Policies/Branding Guidelines say pages/features displaying YouTube content should make YouTube's source clear using applicable YouTube Brand Features, and the branding guidance discusses a `Developed with YouTube` logo for clients that are heavily dependent on YouTube content.
 
-VDT v1.30 instead uses text-only `Developed with YouTube API` attribution on the `about` screen because that is the project's chosen interface treatment. **This document does not claim that the current placement/text satisfies YouTube's current branding requirements.** Re-review before broader/public/commercial deployment.
+VDT v1.30.1 instead uses text-only `Developed with YouTube API` attribution on the `about` screen because that is the project's chosen interface treatment. **This document does not claim that the current placement/text satisfies YouTube's current branding requirements.** Re-review before broader/public/commercial deployment.
 
 ### 2. Optional title normalization
 
