@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.31 — Saved Videos
+
+- Added Saved Videos with instant `☆` / `★` save and unsave controls on video lists.
+- Added `[S] SAVED VIDEOS` above the creator list under Request a Watch.
+- Saved videos are aggregated across creators and do not consume credits or affect cooldowns until actually requested.
+- Saved entries retain local metadata if a creator is removed and can show unavailable videos without silently deleting the saved entry.
+- Added automatic SQLite schema migration/version tracking for existing installations.
+- Added Saved Videos to local data export/delete behavior.
+- Preserved normal watched, rewatch-cost, credit, cooldown, and override behavior when requesting a saved video.
+
 ## v1.30.1 — Setup/PWA hotfix
 
 - Fixed `setup.sh` failing on Linux because the v1.30 release artifact contained Windows CRLF line endings.

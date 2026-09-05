@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#050805">
-<title>Video-Destim-Terminal v1.30.1</title>
+<title>Video-Destim-Terminal v1.31</title>
 <link rel="icon" href="/favicon.svg?v=1.30.1" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1.30.1">
 <link rel="manifest" href="/manifest.webmanifest?v=1.30.1">
@@ -54,10 +54,10 @@ input[type=number]{max-width:140px}
 .signal-terminal-line{min-height:1.2em;white-space:pre-wrap}
 .signal-flight{height:2.2em;overflow:hidden;white-space:pre;font:inherit;margin:22px 0 18px}
 .signal-actions{margin-top:18px}
-.video{margin:12px 0 18px}.video-title{font-variant-emoji:text}.emoji-glyph{display:inline-block;font-variant-emoji:text;font-size:.90em;line-height:1;vertical-align:-.04em;filter:grayscale(1) sepia(1) saturate(5) hue-rotate(68deg) brightness(1.05) contrast(1.05);opacity:.88}.meta{font-size:19px;color:var(--dim);margin-top:3px}.watched{text-decoration:line-through;color:var(--dim)}.cursor:after{content:"_";animation:b 1s step-end infinite}@keyframes b{50%{opacity:0}}
+.video{margin:12px 0 18px}.video-main{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:1ch;align-items:start}.video-main .item{margin:0;min-width:0}.save-star{display:block;margin:0;padding:0 .1ch;cursor:pointer;color:var(--fg);font-size:1.08em;line-height:1;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}.video-title{font-variant-emoji:text}.emoji-glyph{display:inline-block;font-variant-emoji:text;font-size:.90em;line-height:1;vertical-align:-.04em;filter:grayscale(1) sepia(1) saturate(5) hue-rotate(68deg) brightness(1.05) contrast(1.05);opacity:.88}.meta{font-size:19px;color:var(--dim);margin-top:3px}.watched{text-decoration:line-through;color:var(--dim)}.cursor:after{content:"_";animation:b 1s step-end infinite}@keyframes b{50%{opacity:0}}
 </style>
 </head>
-<body><main class="screen-frame"><div id="app"><div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30.1</div><hr><div>INITIALIZING...</div></div></main>
+<body><main class="screen-frame"><div id="app"><div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.31</div><hr><div>INITIALIZING...</div></div></main>
 <script>
 const KEY="videoDestimTerminalState", OLD_KEY="videoDestimTerminalLegacyV002";
 const LEGAL_ACCEPT_KEY="videoDestimTerminalLegalAccepted-2026-08";
@@ -72,16 +72,18 @@ const titleSegmenter=(typeof Intl!=="undefined"&&Intl.Segmenter)?new Intl.Segmen
 function terminalVideoTitle(title){let text=String(title);if(!titleSegmenter)return esc(text);return Array.from(titleSegmenter.segment(text),part=>{let seg=part.segment;return EMOJI_SEGMENT_RE.test(seg)?`<span class="emoji-glyph">${esc(seg)}</span>`:esc(seg)}).join("")}
 function bind(id,fn){setTimeout(()=>{let e=document.getElementById(id);if(e)e.onclick=fn},0)}
 function shortcutFromLabel(label){let m=String(label).match(/^\[([^\]]+)\]/);if(!m)return"";let key=m[1].trim();if(/^\d+$/.test(key))return String(parseInt(key,10));return key.toLowerCase()}
-function returnView(){try{let raw=sessionStorage.getItem("videoDestimReturnView");if(!raw)return{name:"home"};sessionStorage.removeItem("videoDestimReturnView");let v=JSON.parse(raw);return v&&v.name==="videos"?v:{name:"home"}}catch(e){return{name:"home"}}}
+function returnView(){try{let raw=sessionStorage.getItem("videoDestimReturnView");if(!raw)return{name:"home"};sessionStorage.removeItem("videoDestimReturnView");let v=JSON.parse(raw);return v&&["videos","savedVideos"].includes(v.name)?v:{name:"home"}}catch(e){return{name:"home"}}}
 async function api(url,opts={}){let options={...opts,headers:{"Content-Type":"application/json",...(opts.headers||{})}};if(options.body&&typeof options.body!=="string")options.body=JSON.stringify(options.body);let r=await fetch(url,options);let data={};try{data=await r.json()}catch(e){}if(!r.ok)throw new Error(data.error||`REQUEST FAILED (${r.status})`);return data}
 async function refreshState(){let tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";st=await api(`/api/state?tz=${encodeURIComponent(tz)}`);stateFetchedAt=Date.now();return st}
 function legalAccepted(){try{return localStorage.getItem(LEGAL_ACCEPT_KEY)==="1"}catch(e){return false}}
 function openExternal(url){window.open(url,"_blank","noopener")}
 async function boot(){try{await refreshState();if(st.needsMigration){let raw=localStorage.getItem(KEY)||localStorage.getItem(OLD_KEY);if(raw){try{await api("/api/migrate",{method:"POST",body:JSON.parse(raw)})}catch(e){await api("/api/initialize",{method:"POST"})}}else await api("/api/initialize",{method:"POST"});await refreshState()}if(!legalAccepted())return legalGate();render()}catch(e){fatal(e.message)}}
-function fatal(msg){app.innerHTML=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30.1</div><hr><div class="err">${esc(msg)}</div><div class="tiny dim">CHECK CONTAINER STATUS / LOGS.</div>`}
+function fatal(msg){app.innerHTML=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.31</div><hr><div class="err">${esc(msg)}</div><div class="tiny dim">CHECK CONTAINER STATUS / LOGS.</div>`}
 function cooldownMs(){return Math.max(0,(st?.cooldownRemainingMs||0)-(Date.now()-stateFetchedAt))}
-function head(sub=""){let tid="t"+Math.random().toString(36).slice(2);bind(tid,()=>{if(view.name==="configLeave"||view.name==="reorderLeave")return;requestNavigation({name:"home"})});let path="";if(sub){let parts=sub.split(" / ");let p=parts.map((label,i)=>{let current=i===parts.length-1,route=null;if(!current&&label==="CONFIG")route=()=>requestNavigation({name:"config"});if(!current&&label==="STATS")route=()=>requestNavigation({name:"stats",scope:view.scope||"period"});if(!current&&label==="REQUEST A WATCH")route=()=>requestNavigation({name:"creators"});if(!current&&label==="AVAILABLE CREATORS")route=()=>requestNavigation({name:"creatorCfg"});if(!current&&i>0&&parts[0]==="REQUEST A WATCH"&&view.cid&&label!=="SELECT CREATOR")route=()=>requestNavigation({name:"videos",cid:view.cid,sort:view.sort||st.settings.sort});if(route){let id="p"+Math.random().toString(36).slice(2);bind(id,route);return `<button type="button" id="${id}" class="crumb">${esc(label)}</button>`}return `<span class="current">${esc(label)}</span>`}).join(`<span> / </span>`);path=`<div class="path">${p}</div>`}let sid="s"+Math.random().toString(36).slice(2),lid="l"+Math.random().toString(36).slice(2);bind(sid,()=>openSupport());bind(lid,()=>openLegal());return `<button type="button" id="${tid}" class="title nav">VIDEO-DESTIM-TERMINAL</button><div class="dim">v1.30.1 · <button type="button" id="${sid}" class="header-inline">SUPPORT</button> · <button type="button" id="${lid}" class="header-inline">LEGAL</button></div>${path}<hr>`}
+function head(sub=""){let tid="t"+Math.random().toString(36).slice(2);bind(tid,()=>{if(view.name==="configLeave"||view.name==="reorderLeave")return;requestNavigation({name:"home"})});let path="";if(sub){let parts=sub.split(" / ");let p=parts.map((label,i)=>{let current=i===parts.length-1,route=null;if(!current&&label==="CONFIG")route=()=>requestNavigation({name:"config"});if(!current&&label==="STATS")route=()=>requestNavigation({name:"stats",scope:view.scope||"period"});if(!current&&label==="REQUEST A WATCH")route=()=>requestNavigation({name:"creators"});if(!current&&label==="AVAILABLE CREATORS")route=()=>requestNavigation({name:"creatorCfg"});if(!current&&i>0&&parts[0]==="REQUEST A WATCH"&&view.cid&&label!=="SELECT CREATOR")route=()=>requestNavigation({name:"videos",cid:view.cid,sort:view.sort||st.settings.sort});if(route){let id="p"+Math.random().toString(36).slice(2);bind(id,route);return `<button type="button" id="${id}" class="crumb">${esc(label)}</button>`}return `<span class="current">${esc(label)}</span>`}).join(`<span> / </span>`);path=`<div class="path">${p}</div>`}let sid="s"+Math.random().toString(36).slice(2),lid="l"+Math.random().toString(36).slice(2);bind(sid,()=>openSupport());bind(lid,()=>openLegal());return `<button type="button" id="${tid}" class="title nav">VIDEO-DESTIM-TERMINAL</button><div class="dim">v1.31 · <button type="button" id="${sid}" class="header-inline">SUPPORT</button> · <button type="button" id="${lid}" class="header-inline">LEGAL</button></div>${path}<hr>`}
 function item(label,fn,disabled=false,isDefault=false){let id="i"+Math.random().toString(36).slice(2),key=shortcutFromLabel(label);setTimeout(()=>{let e=document.getElementById(id);if(e&&!disabled)e.onclick=fn},0);return `<button type="button" id="${id}" class="item${disabled?" disabled":""}"${key?` data-shortcut="${key}"`:""}${isDefault?' data-default="1"':""}>${label}</button>`}
+function starButton(video,fn){let id="sv"+Math.random().toString(36).slice(2),saved=!!video.saved,label=saved?"REMOVE FROM SAVED VIDEOS":"SAVE VIDEO";bind(id,fn);return `<button type="button" id="${id}" class="save-star" aria-label="${label}" title="${label}">${saved?"★":"☆"}</button>`}
+function videoRow(x,i,onOpen,onToggle,meta){let label=`[${String(i+1).padStart(2,"0")}] <span class="video-title ${x.watched?"watched":""}">${terminalVideoTitle(x.title)}</span>`;return `<div class="video"><div class="video-main">${item(label,onOpen,x.available===false)}${starButton(x,onToggle)}</div><div class="meta">${meta}</div></div>`}
 function docCommand(command,description,fn){let id="d"+Math.random().toString(36).slice(2);bind(id,fn);return `<div><button type="button" id="${id}" class="doc-command">${esc(command)}</button></div><div class="tiny dim">${esc(description)}</div><div class="space"></div>`}
 function cfg(num,label,value,fn,disabled=false){let id="c"+Math.random().toString(36).slice(2);setTimeout(()=>{let e=document.getElementById(id);if(e&&!disabled)e.onclick=fn},0);return `<button type="button" id="${id}" class="cfg-item${disabled?" disabled":""}" data-shortcut="${num}"><span class="cfg-label">[${num}] ${label}</span><span class="cfg-value-row"><span class="cfg-dots"></span><span class="cfg-value">${value}</span></span></button>`}
 function creatorPrefix(n,total,bracket=false){
@@ -341,7 +343,7 @@ async function stats(){
 
 
 function legalGate(){
-  let h=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.30.1</div><hr><div>BEFORE CONTINUING</div><div class="space"></div><div class="legal-copy"><div>VIDEO DESTIM TERMINAL USES YOUTUBE API SERVICES TO RETRIEVE PUBLIC CHANNEL AND VIDEO METADATA.</div><div>BY CONTINUING, YOU ACKNOWLEDGE THE VIDEO DESTIM TERMINAL PRIVACY NOTICE AND TERMS, AND AGREE TO BE BOUND BY THE YOUTUBE TERMS OF SERVICE.</div></div><hr>`;
+  let h=`<div class="title">VIDEO-DESTIM-TERMINAL</div><div class="dim">v1.31</div><hr><div>BEFORE CONTINUING</div><div class="space"></div><div class="legal-copy"><div>VIDEO DESTIM TERMINAL USES YOUTUBE API SERVICES TO RETRIEVE PUBLIC CHANNEL AND VIDEO METADATA.</div><div>BY CONTINUING, YOU ACKNOWLEDGE THE VIDEO DESTIM TERMINAL PRIVACY NOTICE AND TERMS, AND AGREE TO BE BOUND BY THE YOUTUBE TERMS OF SERVICE.</div></div><hr>`;
   h+=item("[1] PRIVACY NOTICE",()=>openExternal("/privacy"));
   h+=item("[2] VIDEO DESTIM TERMINAL TERMS",()=>openExternal("/terms"));
   h+=item("[3] YOUTUBE TERMS OF SERVICE",()=>openExternal("https://www.youtube.com/t/terms"));
@@ -539,14 +541,107 @@ function saveReorderAndExit(){let target=reorderLeaveTarget?copy(reorderLeaveTar
 function reorderLeave(){app.innerHTML=head("CONFIG / REORDER CREATORS / UNSAVED CHANGES")+`<div class="warn">UNSAVED CHANGES WILL BE LOST.</div><div>LEAVE REORDER CREATORS? [Y/N/S]</div><div class="space"></div>`+item("[Y] YES",()=>discardReorderAndExit())+item("[N] NO",()=>cancelReorderLeave(),false,true)+item("[S] SAVE AND EXIT",()=>saveReorderAndExit())+commandPrompt()}
 function reorder(){if(!reorderDraft)reorderDraft=copy(st.creators);reorderDirty=reorderChanged();let h=head("CONFIG / REORDER CREATORS");reorderDraft.forEach((c,i)=>h+=`<div>${creatorPrefix(i+1,reorderDraft.length)}${esc(c.name)}</div>`);h+=`<hr>`+item("[N] SORT BY NAME",()=>{reorderDraft.sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:"base"}));reorderDirty=reorderChanged();reorder()})+item("[D] SORT BY DATE ADDED",()=>{reorderDraft.sort((a,b)=>(Number(a.addedAt)||Number(a.id))-(Number(b.addedAt)||Number(b.id)));reorderDirty=reorderChanged();reorder()})+`<hr><div>MANUAL SORT</div><div class="space"></div><div>MOVE CREATOR #:</div><input id="from" type="number" inputmode="numeric" min="1" max="${reorderDraft.length}"><div class="space"></div><div>NEW POSITION:</div><input id="to" type="number" inputmode="numeric" min="1" max="${reorderDraft.length}"><div class="space"></div>`+item("[M] MOVE",()=>{let f=parseInt(document.getElementById("from").value)-1,t=parseInt(document.getElementById("to").value)-1;if(!Number.isInteger(f)||!Number.isInteger(t)||f<0||t<0||f>=reorderDraft.length||t>=reorderDraft.length)return showError("INVALID CREATOR POSITION.",()=>go("reorder"));let moved=reorderDraft.splice(f,1)[0];reorderDraft.splice(t,0,moved);reorderDirty=reorderChanged();reorder()})+`<hr>`+item("[S] SAVE",()=>saveReorder({name:"config"}))+item("[C] CANCEL",()=>{clearReorder();go("config")})+item("[B] BACK",()=>leaveReorder());if(reorderDirty)h+=`<div class="tiny warn">UNSAVED CHANGES</div>`;h+=commandPrompt();app.innerHTML=h}
 function tickCreatorCooldown(){if(view.name!=="creators")return;let c=cooldownMs(),el=document.getElementById("creatorCooldown");if(c<=0){creators();return}if(el)el.textContent=`COOLDOWN REMAINING: ${rem(c)}`;setTimeout(tickCreatorCooldown,1000)}
-function creators(){let c=cooldownMs(),locked=c&&st.settings.block&&!overridePinValue,h=head("REQUEST A WATCH / SELECT CREATOR");if(locked){h+=`<div class="warn">REQUESTS LOCKED.</div><div id="creatorCooldown">COOLDOWN REMAINING: ${rem(c)}</div>`;h+=item("[O] MANUAL OVERRIDE",()=>go("override"));h+="<hr>"}else if(overridePinValue&&c&&st.settings.block){h+=`<div class="warn">MANUAL OVERRIDE ACTIVE.</div><div class="tiny dim">NEXT WATCH REQUEST WILL BYPASS THE CURRENT COOLDOWN.</div><hr>`}if(!st.creators.length)h+=`<div class="dim">NO AVAILABLE CREATORS. ADD ONE IN CONFIG.</div>`;else st.creators.forEach((x,i)=>h+=item(`${creatorPrefix(i+1,st.creators.length,true)}${esc(x.name)}`,()=>go("videos",{cid:x.id,sort:st.settings.sort}),locked));h+="<hr>"+item("[B] BACK",()=>go("home"))+commandPrompt();app.innerHTML=h;if(locked)setTimeout(tickCreatorCooldown,1000)}
+function creators(){
+  let c=cooldownMs(),locked=c&&st.settings.block&&!overridePinValue,h=head("REQUEST A WATCH / SELECT CREATOR");
+  if(locked){
+    h+=`<div class="warn">REQUESTS LOCKED.</div><div id="creatorCooldown">COOLDOWN REMAINING: ${rem(c)}</div>`;
+    h+=item("[O] MANUAL OVERRIDE",()=>go("override"));
+    h+="<hr>";
+  }else if(overridePinValue&&c&&st.settings.block){
+    h+=`<div class="warn">MANUAL OVERRIDE ACTIVE.</div><div class="tiny dim">NEXT WATCH REQUEST WILL BYPASS THE CURRENT COOLDOWN.</div><hr>`;
+  }
+  h+=item("[S] SAVED VIDEOS",()=>go("savedVideos"))+"<hr>";
+  if(!st.creators.length){
+    h+=`<div class="dim">NO AVAILABLE CREATORS.
+ADD ONE IN CONFIG.</div>`;
+  }else{
+    st.creators.forEach((x,i)=>h+=item(`${creatorPrefix(i+1,st.creators.length,true)}${esc(x.name)}`,()=>go("videos",{cid:x.id,sort:st.settings.sort}),locked));
+  }
+  h+="<hr>"+item("[B] BACK",()=>go("home"))+commandPrompt();
+  app.innerHTML=h;
+  if(locked)setTimeout(tickCreatorCooldown,1000);
+}
 function overridePin(msg=""){let h=head("REQUEST A WATCH / MANUAL OVERRIDE");h+=`<div>ENTER OVERRIDE PIN:</div><div class="space"></div><input id="pin" type="password" inputmode="numeric" maxlength="4" autocomplete="off">`;if(msg)h+=`<div class="err">${esc(msg)}</div>`;h+=`<div class="space"></div>`+item("[U] UNLOCK",async()=>{let code=document.getElementById("pin").value;try{await api("/api/override/check",{method:"POST",body:{pin:code}});overridePinValue=code;go("creators")}catch(e){overridePin(e.message)}})+item("[C] CANCEL",()=>go("creators"))+commandPrompt();app.innerHTML=h;setTimeout(()=>document.getElementById("pin")?.focus(),50)}
 function fmtDur(s){let h=Math.floor(s/3600),m=Math.floor((s%3600)/60);return h?`${h}h ${String(m).padStart(2,"0")}m`:`${m}m`}
-async function videos(){let creator=st.creators.find(x=>x.id===view.cid);if(!creator)return go("creators");let sort=view.sort||st.settings.sort;app.innerHTML=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div>LOADING VIDEOS...</div>`;try{let data=await api(`/api/creators/${creator.id}/videos?sort=${encodeURIComponent(sort)}`);creator=data.creator;let vids=data.videos.map(x=>({...x,title:normalizeVideoTitle(x.title)}));let idx=st.creators.findIndex(x=>x.id===creator.id);if(idx>=0)st.creators[idx]=creator;let h=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div>SORT: ${sortName(sort).toUpperCase()}</div>`+item("[S] CHANGE SORT",()=>{let a=["name","upload","length"];go("videos",{cid:creator.id,sort:a[(a.indexOf(sort)+1)%3]})})+item("[R] REFRESH CREATOR",()=>refreshVideos(creator.id,sort))+"<hr>";if(!vids.length)h+=`<div class="dim">NO ELIGIBLE VIDEOS FOUND.</div>`;vids.forEach((x,i)=>{h+=`<div class="video">`+item(`[${String(i+1).padStart(2,"0")}] <span class="video-title ${x.watched?"watched":""}">${terminalVideoTitle(x.title)}</span>`,()=>go("confirm",{cid:creator.id,sort,video:x}))+`<div class="meta">${new Date(x.publishedAt).toLocaleDateString()} · ${fmtDur(x.durationSeconds)} · ${x.cost} CREDIT${x.cost===1?"":"S"}${x.watched?" · WATCHED":""}</div></div>`});h+="<hr>"+item("[B] BACK",()=>go("creators"))+commandPrompt();app.innerHTML=h}catch(e){app.innerHTML=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[B] BACK",()=>go("creators"))+commandPrompt()}}
+async function toggleSavedVideo(x,creator,returnTarget){
+  try{
+    if(x.saved){
+      await api(`/api/saved/${encodeURIComponent(x.id)}`,{method:"DELETE"});
+    }else{
+      await api(`/api/saved/${encodeURIComponent(x.id)}`,{method:"PUT",body:{creatorId:creator?.id??x.creatorId??null,creatorName:creator?.name??x.creatorName??"UNKNOWN CREATOR",videoTitle:x.rawTitle||x.title,publishedAt:x.publishedAt||null,durationSeconds:x.durationSeconds||0}});
+    }
+    goTarget(returnTarget);
+  }catch(e){showError(e.message,()=>goTarget(returnTarget))}
+}
+async function videos(){
+  let creator=st.creators.find(x=>x.id===view.cid);
+  if(!creator)return go("creators");
+  let sort=view.sort||st.settings.sort;
+  app.innerHTML=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div>LOADING VIDEOS...</div>`;
+  try{
+    let data=await api(`/api/creators/${creator.id}/videos?sort=${encodeURIComponent(sort)}`);
+    creator=data.creator;
+    let vids=data.videos.map(x=>({...x,rawTitle:x.title,title:normalizeVideoTitle(x.title)}));
+    let idx=st.creators.findIndex(x=>x.id===creator.id);if(idx>=0)st.creators[idx]=creator;
+    let h=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div>SORT: ${sortName(sort).toUpperCase()}</div>`+item("[S] CHANGE SORT",()=>{let a=["name","upload","length"];go("videos",{cid:creator.id,sort:a[(a.indexOf(sort)+1)%3]})})+item("[R] REFRESH CREATOR",()=>refreshVideos(creator.id,sort))+"<hr>";
+    if(!vids.length)h+=`<div class="dim">NO ELIGIBLE VIDEOS FOUND.</div>`;
+    vids.forEach((x,i)=>{let meta=`${new Date(x.publishedAt).toLocaleDateString()} · ${fmtDur(x.durationSeconds)} · ${x.cost} CREDIT${x.cost===1?"":"S"}${x.watched?" · WATCHED":""}`;h+=videoRow(x,i,()=>go("confirm",{cid:creator.id,sort,video:x,source:"creator",creatorName:creator.name}),()=>toggleSavedVideo(x,creator,{name:"videos",cid:creator.id,sort}),meta)});
+    h+="<hr>"+item("[B] BACK",()=>go("creators"))+commandPrompt();app.innerHTML=h;
+  }catch(e){app.innerHTML=head("REQUEST A WATCH / "+creator.name.toUpperCase())+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[B] BACK",()=>go("creators"))+commandPrompt()}
+}
 async function refreshVideos(cid,sort){let creator=st.creators.find(x=>x.id===cid);app.innerHTML=head("REQUEST A WATCH / "+(creator?creator.name.toUpperCase():"CREATOR"))+`<div>REFRESHING CREATOR...</div>`;try{await api(`/api/creators/${cid}/videos?sort=${encodeURIComponent(sort)}&refresh=1`);go("videos",{cid,sort})}catch(e){showError(e.message,()=>go("videos",{cid,sort}))}}
-function confirm(){let x=view.video,c=st.creators.find(y=>y.id===view.cid);app.innerHTML=head(`REQUEST A WATCH / ${c?c.name.toUpperCase():"VIDEOS"} / CONFIRM`)+`<div class="video-title ${x.watched?"watched":""}">${terminalVideoTitle(x.title)}</div><div class="meta">${new Date(x.publishedAt).toLocaleDateString()} · ${fmtDur(x.durationSeconds)}</div><div class="space"></div><div>THIS WILL USE ${x.cost} WATCH CREDIT${x.cost===1?"":"S"}. PROCEED? [Y/N]</div><div class="space"></div>`+item("[Y] YES",()=>proceed(),false,true)+item("[N] NO",()=>go("videos",{cid:view.cid,sort:view.sort}))+commandPrompt()}
-async function proceed(){let x=view.video,cid=view.cid,sort=view.sort;app.innerHTML=head("REQUEST A WATCH")+`<div>COMMITTING WATCH REQUEST...</div>`;try{let data=await api("/api/watch",{method:"POST",body:{videoId:x.id,creatorId:cid,videoTitle:x.title,durationSeconds:x.durationSeconds,overridePin:overridePinValue}});st=data.state;stateFetchedAt=Date.now();overridePinValue=null;let rv={name:"videos",cid,sort};try{sessionStorage.setItem("videoDestimReturnView",JSON.stringify(rv))}catch(e){}view=rv;render();setTimeout(()=>{location.href=data.url},125)}catch(e){app.innerHTML=head("REQUEST A WATCH")+`<div class="err">${esc(e.message)}</div>`+item("[B] BACK",()=>go("videos",{cid,sort}))+commandPrompt()}}
-function render(){if(!st)return;({home,stats,about,readDoc,history,diag,flushCache,creditEject,legal,support,deleteData,signal,config,configLeave,amount,cooldown,creatorCfg,addCreator,removeCreator,reorder,reorderLeave,creators,override:overridePin,videos,confirm}[view.name]||home)()}
+async function savedVideos(){
+  app.innerHTML=head("REQUEST A WATCH / SAVED VIDEOS")+`<div>LOADING SAVED VIDEOS...</div>`;
+  try{
+    let data=await api("/api/saved");
+    let vids=(data.items||[]).map(x=>({...x,rawTitle:x.title,title:normalizeVideoTitle(x.title)}));
+    let h=head("REQUEST A WATCH / SAVED VIDEOS");
+    if(!vids.length)h+=`<div class="dim">NO SAVED VIDEOS.</div><div class="tiny dim">STAR A VIDEO TO ADD IT HERE.</div>`;
+    vids.forEach((x,i)=>{let date=x.publishedAt?new Date(x.publishedAt).toLocaleDateString():"DATE UNKNOWN";let meta=`${esc(x.creatorName||"UNKNOWN CREATOR")} · ${date} · ${fmtDur(x.durationSeconds)} · ${x.cost} CREDIT${x.cost===1?"":"S"}${x.watched?" · WATCHED":""}${x.available===false?" · UNAVAILABLE":""}`;h+=videoRow(x,i,()=>go("confirm",{cid:x.creatorId,video:x,source:"saved",creatorName:x.creatorName}),()=>toggleSavedVideo(x,null,{name:"savedVideos"}),meta)});
+    h+="<hr>"+item("[B] BACK",()=>go("creators"))+commandPrompt();app.innerHTML=h;
+  }catch(e){app.innerHTML=head("REQUEST A WATCH / SAVED VIDEOS")+`<div class="err">${esc(e.message)}</div><div class="space"></div>`+item("[B] BACK",()=>go("creators"))+commandPrompt()}
+}
+function confirm(){
+  let x=view.video,c=st.creators.find(y=>y.id===view.cid),creatorName=c?.name||view.creatorName||x.creatorName||"SAVED VIDEO",back=view.source==="saved"?{name:"savedVideos"}:{name:"videos",cid:view.cid,sort:view.sort};
+  app.innerHTML=head(`REQUEST A WATCH / ${creatorName.toUpperCase()} / CONFIRM`)+`<div class="video-title ${x.watched?"watched":""}">${terminalVideoTitle(x.title)}</div><div class="meta">${x.publishedAt?new Date(x.publishedAt).toLocaleDateString():"DATE UNKNOWN"} · ${fmtDur(x.durationSeconds)}</div><div class="space"></div><div>THIS WILL USE ${x.cost} WATCH CREDIT${x.cost===1?"":"S"}.
+PROCEED? [Y/N]</div><div class="space"></div>`+item("[Y] YES",()=>proceed(),false,true)+item("[N] NO",()=>goTarget(back))+commandPrompt();
+}
+let watchRequestPending=false;
+async function proceed(){
+  if(watchRequestPending)return;
+  watchRequestPending=true;
+  let videoTab=null;
+  try{
+    let confirmView={...view},x=view.video,cid=view.cid,sort=view.sort,creator=st.creators.find(y=>y.id===cid),creatorName=creator?.name||view.creatorName||x.creatorName||"UNKNOWN CREATOR",rv=view.source==="saved"?{name:"savedVideos"}:{name:"videos",cid,sort};
+    try{
+      videoTab=window.open("about:blank","_blank");
+      if(videoTab){videoTab.opener=null;videoTab.document.title="VDT — Opening video";videoTab.document.body.textContent="Processing your watch request…";}
+    }catch(e){try{videoTab?.close()}catch(_){}videoTab=null;}
+    if(!videoTab){
+      showError("NEW TAB BLOCKED. ALLOW POP-UPS FOR VDT AND TRY AGAIN.",()=>goTarget(confirmView));
+      return;
+    }
+    app.innerHTML=head("REQUEST A WATCH")+`<div>COMMITTING WATCH REQUEST...</div>`;
+    let data;
+    try{
+      data=await api("/api/watch",{method:"POST",body:{videoId:x.id,creatorId:cid,creatorName,videoTitle:x.rawTitle||x.title,durationSeconds:x.durationSeconds,overridePin:overridePinValue}});
+    }catch(e){
+      try{videoTab.close()}catch(_){}
+      app.innerHTML=head("REQUEST A WATCH")+`<div class="err">${esc(e.message)}</div>`+item("[B] BACK",()=>goTarget(rv))+commandPrompt();
+      return;
+    }
+    st=data.state;stateFetchedAt=Date.now();overridePinValue=null;
+    try{sessionStorage.setItem("videoDestimReturnView",JSON.stringify(rv))}catch(e){}
+    view=rv;
+    let opened=false;
+    try{if(!videoTab.closed){videoTab.location.replace(data.url);opened=true;}}catch(e){try{videoTab.close()}catch(_){} }
+    if(opened){render();}
+    else{
+      app.innerHTML=head("REQUEST A WATCH")+`<div>WATCH REQUEST RECORDED.</div><div>OPEN YOUR VIDEO BELOW.</div><div class="space"></div><a class="item" data-shortcut="O" href="${esc(data.url)}" target="_blank" rel="noopener">[O] OPEN VIDEO</a>`+item("[B] BACK",()=>goTarget(rv))+commandPrompt();
+    }
+  }finally{watchRequestPending=false;}
+}
+function render(){if(!st)return;({home,stats,about,readDoc,history,diag,flushCache,creditEject,legal,support,deleteData,signal,config,configLeave,amount,cooldown,creatorCfg,addCreator,removeCreator,reorder,reorderLeave,creators,override:overridePin,videos,savedVideos,confirm}[view.name]||home)()}
 
 let numericShortcutBuffer="",numericShortcutTimer=null;
 function typingTarget(el){

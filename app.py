@@ -23,7 +23,8 @@ MAX_PLAYLIST_PAGES = int(os.environ.get("MAX_PLAYLIST_PAGES", "4"))
 MIN_VIDEO_SECONDS = 181
 API_DATA_MAX_AGE_SECONDS = 29 * 24 * 60 * 60
 API_REFRESH_CHECK_INTERVAL_SECONDS = 6 * 60 * 60
-APP_VERSION = "v1.30.1"
+APP_VERSION = "v1.31"
+DB_SCHEMA_VERSION = 2
 
 if not re.fullmatch(r"\d{4}", OVERRIDE_PIN):
     raise RuntimeError("OVERRIDE_PIN MUST BE SET TO EXACTLY 4 DIGITS IN .env")
@@ -113,6 +114,19 @@ def init_db():
                 override_used INTEGER NOT NULL DEFAULT 0,
                 metadata_refreshed_at REAL NOT NULL DEFAULT 0
             );
+            CREATE TABLE IF NOT EXISTS saved_videos (
+                video_id TEXT PRIMARY KEY,
+                creator_id INTEGER,
+                creator_name TEXT NOT NULL,
+                video_title TEXT NOT NULL,
+                published_at TEXT,
+                duration_seconds INTEGER NOT NULL DEFAULT 0,
+                saved_at REAL NOT NULL,
+                metadata_refreshed_at REAL NOT NULL DEFAULT 0,
+                available INTEGER NOT NULL DEFAULT 1
+            );
+            CREATE INDEX IF NOT EXISTS idx_saved_videos_saved_at
+                ON saved_videos(saved_at);
             CREATE INDEX IF NOT EXISTS idx_watch_events_requested_at
                 ON watch_events(requested_at);
             CREATE INDEX IF NOT EXISTS idx_watch_events_creator_name
@@ -143,6 +157,7 @@ def init_db():
         if "metadata_refreshed_at" not in event_columns:
             con.execute("ALTER TABLE watch_events ADD COLUMN metadata_refreshed_at REAL NOT NULL DEFAULT 0")
         con.execute("UPDATE creators SET added_at=id WHERE added_at IS NULL OR added_at=0")
+        meta_set(con, "schema_version", DB_SCHEMA_VERSION)
 
 
 def meta_get(con, key):
@@ -276,6 +291,7 @@ def state_payload(con):
         "nextReset": next_reset(settings).isoformat(),
         "youtubeConfigured": bool(YOUTUBE_API_KEY),
         "needsMigration": meta_get(con, "initialized") != "1",
+        "schemaVersion": DB_SCHEMA_VERSION,
     }
 
 
@@ -488,9 +504,17 @@ def refresh_stored_api_data(con, force=False):
         """,
         (stale_before,),
     ).fetchall()
+    stale_saved_rows = con.execute(
+        """
+        SELECT video_id,creator_id,creator_name,published_at FROM saved_videos
+        WHERE metadata_refreshed_at < ?
+        """,
+        (stale_before,),
+    ).fetchall()
     video_ids = sorted(
         {str(r["video_id"]) for r in stale_event_rows if r["video_id"]}
         | {str(r["video_id"]) for r in stale_watched_rows if r["video_id"]}
+        | {str(r["video_id"]) for r in stale_saved_rows if r["video_id"]}
     )
 
     current_creator_names = {
@@ -500,6 +524,9 @@ def refresh_stored_api_data(con, force=False):
     events_by_video = {}
     for row in stale_event_rows:
         events_by_video.setdefault(str(row["video_id"]), []).append(row)
+    saved_by_video = {
+        str(row["video_id"]): row for row in stale_saved_rows if row["video_id"]
+    }
 
     for batch_ids in _chunks(video_ids, 50):
         data = youtube_get(
@@ -511,7 +538,8 @@ def refresh_stored_api_data(con, force=False):
             item = found.get(vid)
             event_rows = events_by_video.get(vid, [])
             if item:
-                title = item.get("snippet", {}).get("title") or "VIDEO"
+                snippet = item.get("snippet", {})
+                title = snippet.get("title") or "VIDEO"
                 duration = iso_duration_seconds(item.get("contentDetails", {}).get("duration"))
                 for event in event_rows:
                     creator_name = current_creator_names.get(
@@ -530,6 +558,30 @@ def refresh_stored_api_data(con, force=False):
                     "UPDATE watched SET metadata_refreshed_at=? WHERE video_id=?",
                     (now, vid),
                 )
+                saved_row = saved_by_video.get(vid)
+                if saved_row:
+                    saved_creator_id = saved_row["creator_id"]
+                    current_name = (
+                        current_creator_names.get(int(saved_creator_id))
+                        if saved_creator_id is not None
+                        else None
+                    )
+                    creator_name = (
+                        snippet.get("channelTitle")
+                        or current_name
+                        or saved_row["creator_name"]
+                        or "UNKNOWN CREATOR"
+                    )
+                    published_at = snippet.get("publishedAt") or saved_row["published_at"]
+                    con.execute(
+                        """
+                        UPDATE saved_videos
+                        SET creator_name=?,video_title=?,published_at=?,
+                            duration_seconds=?,available=1,metadata_refreshed_at=?
+                        WHERE video_id=?
+                        """,
+                        (creator_name, title, published_at, duration, now, vid),
+                    )
             else:
                 # If YouTube no longer returns the resource, remove stale API data.
                 con.execute("DELETE FROM watched WHERE video_id=?", (vid,))
@@ -547,6 +599,10 @@ def refresh_stored_api_data(con, force=False):
                         """,
                         (creator_name, now, event["id"]),
                     )
+                con.execute(
+                    "UPDATE saved_videos SET available=0,metadata_refreshed_at=? WHERE video_id=?",
+                    (now, vid),
+                )
 
     meta_set(con, "api_data_refresh_checked_at", now)
     return {
@@ -973,9 +1029,12 @@ def creator_videos(creator_id):
         videos = list(fetch_creator_videos(con, creator_id, refresh=refresh))
         watched_rows = con.execute("SELECT video_id FROM watched").fetchall()
         watched = {r["video_id"] for r in watched_rows}
+        saved_rows = con.execute("SELECT video_id FROM saved_videos").fetchall()
+        saved = {r["video_id"] for r in saved_rows}
         settings = load_settings(con)
         for v in videos:
             v["watched"] = v["id"] in watched
+            v["saved"] = v["id"] in saved
             v["cost"] = 0 if v["watched"] and not settings.get("repeatCosts") else 1
         if sort == "name":
             videos.sort(key=lambda x: x["title"].casefold())
@@ -985,6 +1044,107 @@ def creator_videos(creator_id):
             videos.sort(key=lambda x: x.get("publishedAt") or "", reverse=True)
         creator = con.execute("SELECT * FROM creators WHERE id=?", (creator_id,)).fetchone()
         return jsonify({"creator": creator_dict(creator), "videos": videos})
+
+
+
+@app.get("/api/saved")
+def get_saved_videos():
+    with db() as con:
+        try:
+            refresh_stored_api_data(con)
+        except Exception:
+            app.logger.warning("Stored API metadata refresh failed", exc_info=True)
+        settings = load_settings(con)
+        watched = {
+            row["video_id"]
+            for row in con.execute("SELECT video_id FROM watched").fetchall()
+        }
+        rows = con.execute(
+            """
+            SELECT video_id,creator_id,creator_name,video_title,published_at,
+                   duration_seconds,saved_at,metadata_refreshed_at,available
+            FROM saved_videos
+            ORDER BY saved_at DESC, video_id ASC
+            """
+        ).fetchall()
+        return jsonify(
+            {
+                "items": [
+                    {
+                        "id": row["video_id"],
+                        "creatorId": int(row["creator_id"]) if row["creator_id"] is not None else None,
+                        "creatorName": row["creator_name"],
+                        "title": row["video_title"],
+                        "publishedAt": row["published_at"],
+                        "durationSeconds": int(row["duration_seconds"] or 0),
+                        "savedAt": float(row["saved_at"]),
+                        "available": bool(row["available"]),
+                        "watched": row["video_id"] in watched,
+                        "saved": True,
+                        "cost": 0 if row["video_id"] in watched and not settings.get("repeatCosts") else 1,
+                        "url": f"https://www.youtube.com/watch?v={row['video_id']}",
+                    }
+                    for row in rows
+                ]
+            }
+        )
+
+
+@app.put("/api/saved/<video_id>")
+def save_video(video_id):
+    if not re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id):
+        raise APIError("INVALID VIDEO ID.")
+    payload = request.get_json(silent=True) or {}
+    try:
+        creator_id = int(payload.get("creatorId"))
+    except Exception:
+        creator_id = None
+    creator_name = str(payload.get("creatorName") or "").strip()[:500]
+    video_title = str(payload.get("videoTitle") or video_id).strip()[:1000]
+    published_at = str(payload.get("publishedAt") or "").strip()[:100] or None
+    try:
+        duration_seconds = max(0, int(payload.get("durationSeconds") or 0))
+    except Exception:
+        duration_seconds = 0
+    now = time.time()
+    with db() as con:
+        creator = (
+            con.execute("SELECT id,name FROM creators WHERE id=?", (creator_id,)).fetchone()
+            if creator_id is not None
+            else None
+        )
+        if creator:
+            creator_id = int(creator["id"])
+            creator_name = creator["name"]
+        if not creator_name:
+            creator_name = "UNKNOWN CREATOR"
+        con.execute(
+            """
+            INSERT INTO saved_videos(
+                video_id,creator_id,creator_name,video_title,published_at,
+                duration_seconds,saved_at,metadata_refreshed_at,available
+            ) VALUES(?,?,?,?,?,?,?,?,1)
+            ON CONFLICT(video_id) DO UPDATE SET
+                creator_id=excluded.creator_id,
+                creator_name=excluded.creator_name,
+                video_title=excluded.video_title,
+                published_at=excluded.published_at,
+                duration_seconds=excluded.duration_seconds,
+                metadata_refreshed_at=excluded.metadata_refreshed_at,
+                available=1
+            """,
+            (video_id, creator_id, creator_name, video_title, published_at, duration_seconds, now, now),
+        )
+    return jsonify({"ok": True, "saved": True})
+
+
+@app.delete("/api/saved/<video_id>")
+def unsave_video(video_id):
+    if not re.fullmatch(r"[A-Za-z0-9_-]{11}", video_id):
+        raise APIError("INVALID VIDEO ID.")
+    with db() as con:
+        con.execute("DELETE FROM saved_videos WHERE video_id=?", (video_id,))
+    return jsonify({"ok": True, "saved": False})
 
 
 @app.post("/api/override/check")
@@ -1010,6 +1170,7 @@ def watch():
         creator_id = None
 
     video_title = str(payload.get("videoTitle") or video_id).strip()[:1000]
+    fallback_creator_name = str(payload.get("creatorName") or "").strip()[:500]
     try:
         duration_seconds = max(0, int(payload.get("durationSeconds") or 0))
     except Exception:
@@ -1026,7 +1187,7 @@ def watch():
             if creator_id is not None
             else None
         )
-        creator_name = creator["name"] if creator else "UNKNOWN CREATOR"
+        creator_name = creator["name"] if creator else (fallback_creator_name or "UNKNOWN CREATOR")
 
         row = con.execute("SELECT watch_count FROM watched WHERE video_id=?", (video_id,)).fetchone()
         was_watched = bool(row)
@@ -1143,6 +1304,7 @@ def diag():
             "appVersion": APP_VERSION,
             "backend": "OK",
             "database": "OK",
+            "schemaVersion": DB_SCHEMA_VERSION,
             "youtubeConfigured": bool(YOUTUBE_API_KEY),
             "databaseBytes": int(db_size),
             "serverTime": datetime.now().astimezone().isoformat(),
@@ -1199,6 +1361,27 @@ def export_data():
             ).fetchall()
         ]
 
+        saved_videos = [
+            {
+                "videoId": row["video_id"],
+                "creatorId": row["creator_id"],
+                "creatorName": row["creator_name"],
+                "videoTitle": row["video_title"],
+                "publishedAt": row["published_at"],
+                "durationSeconds": int(row["duration_seconds"] or 0),
+                "savedAt": float(row["saved_at"]),
+                "metadataRefreshedAt": float(row["metadata_refreshed_at"] or 0),
+                "available": bool(row["available"]),
+            }
+            for row in con.execute(
+                """
+                SELECT video_id,creator_id,creator_name,video_title,published_at,
+                       duration_seconds,saved_at,metadata_refreshed_at,available
+                FROM saved_videos
+                ORDER BY saved_at ASC, video_id ASC
+                """
+            ).fetchall()
+        ]
         watch_events = [
             {
                 "requestedAt": float(row["requested_at"]),
@@ -1233,7 +1416,7 @@ def export_data():
             stats_started = 0
 
         payload = {
-            "schemaVersion": 1,
+            "schemaVersion": DB_SCHEMA_VERSION,
             "appVersion": APP_VERSION,
             "exportedAt": datetime.now().astimezone().isoformat(),
             "settings": settings,
@@ -1242,6 +1425,7 @@ def export_data():
             "statsTrackingSince": stats_started,
             "creators": creators,
             "watched": watched,
+            "savedVideos": saved_videos,
             "watchEvents": watch_events,
         }
 
@@ -1260,6 +1444,7 @@ def delete_local_data():
     with db() as con:
         con.execute("DELETE FROM video_cache")
         con.execute("DELETE FROM watch_events")
+        con.execute("DELETE FROM saved_videos")
         con.execute("DELETE FROM watched")
         con.execute("DELETE FROM creators")
         con.execute("DELETE FROM sqlite_sequence WHERE name IN ('creators','watch_events')")

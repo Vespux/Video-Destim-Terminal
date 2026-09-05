@@ -10,13 +10,14 @@ If you feel it's time we ditch the endless scrolling, attention-economy based, e
 
 You choose which creators are available, VDT shows a compact text-first list of eligible recent uploads, and a confirmed request opens the normal YouTube watch URL in whatever browser/player you use. (We certainly have some recommendations for this that align with the goal of VDT!)
 
-> **Current release: v1.30.1 · Initial public GitHub release: v1.30**
+> **Current development release: v1.31 · Initial public GitHub release: v1.30**
 >
 > Video Destim Terminal is an independent project. It is not affiliated with, sponsored by, or endorsed by YouTube, Google, ReVanced, Mozilla, NewPipe, PipePipe, SponsorBlock, uBlock Origin, Unhook, or Tailscale.
 
 ## What VDT does
 
 - Maintains a user-curated creator list.
+- Lets you save videos with a star and browse them later in one aggregated Saved Videos list.
 - Retrieves public channel/video metadata with the YouTube Data API v3.
 - Shows up to 20 recent eligible uploads per creator in a text-first terminal interface.
 - Excludes videos **3:00 or shorter** and excludes live/upcoming/live-origin items.
@@ -45,7 +46,7 @@ VDT is intentionally narrow in scope, while offering intuitive controls across d
 
 There is no VDT cloud account and no central VDT database. Each installation runs independently.
 
-Your instance stores its configuration, creator list, credit state, request history, watched state, cached public metadata, and stats in a local SQLite database under `data/`. Your `.env` file contains the YouTube API key and override PIN. Those files are not shared.
+Your instance stores its configuration, creator list, saved videos, credit state, request history, watched state, cached public metadata, and stats in a local SQLite database under `data/`. Your `.env` file contains the YouTube API key and override PIN. Those files are not shared.
 
 **Do not share or publish your YouTube API key, `.env`, database, exports, or backups.**
 
